@@ -113,7 +113,14 @@ const EditableCell = ({ value, isOverride, onSave, onReset, integer }) => {
 };
 
 function App() {
-  const [campaigns, setCampaigns] = useState(() => LS.load("sm_campaigns", INIT));
+  const [campaigns, setCampaigns] = useState(() => {
+  const savedVersion = LS.load("sm_data_version", null);
+  if (savedVersion !== DATA_VERSION) {
+    LS.save("sm_data_version", DATA_VERSION);
+    return INIT;
+  }
+  return LS.load("sm_campaigns", INIT);
+});
   const [giorniLav, setGiorniLav] = useState(() => LS.load("sm_giorni", 10));
   const [margineDEM, setMargineDEM] = useState(() => LS.load("sm_dem", 14632));
   const [margineFattoInput, setMargineFattoInput] = useState(() => LS.load("sm_mft", 63738.30));
