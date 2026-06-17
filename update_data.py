@@ -89,11 +89,22 @@ def update_html(html_path, new_init, rows):
     print(f"✓ index.html aggiornato con {len(rows)} campagne")
 
 if __name__ == "__main__":
+    rows_raw = []
+    with open(CSV_PATH, encoding="utf-8-sig") as f:
+        sample = f.read(1024)
+        f.seek(0)
+        sep = ";" if ";" in sample else ","
+        reader = csv.DictReader(f, delimiter=sep)
+        for row in reader:
+            rows_raw.append(dict(row))
+
+    meta = load_meta(rows_raw)
+    giorni = int(meta.get("giorni", 10))
+
     rows = load_csv(CSV_PATH)
     if not rows:
         print("❌ Nessuna riga trovata nel CSV")
         sys.exit(1)
-    new_init = build_init(rows)
+    new_init = build_init(rows, giorni)
     update_html(HTML_PATH, new_init, rows)
-
 
