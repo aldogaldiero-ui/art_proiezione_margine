@@ -20,80 +20,11 @@
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useMemo, useRef } = React;
+const { useState, useMemo, useRef, useEffect } = React;
 
 const fmt = (n) => "€ " + Number(n).toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const pct = (n) => (n == null || !isFinite(n)) ? "#DIV/0!" : n.toFixed(1) + "%";
 const col = (v) => v == null ? "#aaa" : v < 0 ? "#c0392b" : v > 0 ? "#1a8a4a" : "#aaa";
-
-const TOOLTIPS = {
-  "Margine fatto totale": "Margine economico già generato fino ad oggi.",
-  "Margine da fare social": "Margine ancora producibile dalle campagne social.",
-  "Margine da fare DEM": "Margine previsto dalle campagne DEM.",
-  "Totale": "Previsione margine finale.",
-  "Somma margine day social": "Margine giornaliero netto social.",
-  "Stima margine day overall": "Proiezione giornaliera complessiva social + DEM.",
-  "Call center": "Costo giornaliero call center.",
-  "Giorni lavorativi restanti": "Giorni lavorativi (lun–ven) rimanenti.",
-};
-
-const Tooltip = ({ text }) => {
-  const [show, setShow] = useState(false);
-  return (
-    <span style={{ position:"relative", display:"inline-block", marginLeft:5, cursor:"help" }}
-      onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
-      <span style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", width:14, height:14, borderRadius:"50%", background:"#FF5500", color:"#fff", fontSize:9, fontWeight:700 }}>?</span>
-      {show && (
-        <span style={{ position:"absolute", bottom:"calc(100% + 6px)", left:"50%", transform:"translateX(-50%)", background:"#333", color:"#fff", fontSize:11, padding:"6px 10px", borderRadius:6, width:200, zIndex:100, lineHeight:1.5, boxShadow:"0 2px 8px rgba(0,0,0,0.2)", whiteSpace:"normal" }}>
-          {text}
-          <span style={{ position:"absolute", top:"100%", left:"50%", transform:"translateX(-50%)", borderWidth:5, borderStyle:"solid", borderColor:"#333 transparent transparent transparent" }}/>
-        </span>
-      )}
-    </span>
-  );
-};
-
-const EditableCell = ({ value, isOverride, onSave, onReset, integer }) => {
-  const [editing, setEditing] = useState(false);
-  const display = value == null ? "–" : integer ? Math.round(value).toLocaleString("it-IT") : fmt(value);
-  if (editing) return (
-    <input autoFocus type="number" defaultValue={value ?? 0}
-      onBlur={e => { onSave(+e.target.value); setEditing(false); }}
-      onKeyDown={e => { if (e.key === "Enter") { onSave(+e.target.value); setEditing(false); } }}
-      style={{ width:80, fontSize:11, textAlign:"right", border:"none", borderBottom:"1px solid #FF5500", outline:"none", background:"transparent" }}/>
-  );
-  return (
-    <span style={{ display:"flex", alignItems:"center", justifyContent:"flex-end", gap:4 }}>
-      {isOverride && onReset && (
-        <span onClick={onReset} title="Ripristina formula" style={{ fontSize:10, color:"#FF5500", cursor:"pointer" }}>×</span>
-      )}
-      <span onClick={() => setEditing(true)}
-        style={{ fontSize:11, fontWeight:500, cursor:"text", color: isOverride ? "#FF5500" : col(value), textDecoration: isOverride ? "underline dotted" : "none" }}>
-        {display}
-      </span>
-    </span>
-  );
-};
-
-const KPI = ({ label, val, editable, highlight, onChange, noEuro }) => {
-  const [editing, setEditing] = useState(false);
-  const display = noEuro ? Number(val).toLocaleString("it-IT") : fmt(val);
-  return (
-    <div style={{ background: highlight ? "#e8f5e9" : "#fff", borderRadius: 8, padding: "12px 14px", border: highlight ? "1px solid #81c784" : "1px solid rgba(255,85,0,0.2)" }}>
-      <div style={{ fontSize:11, color: highlight ? "#2e7d32" : "#FF5500", fontWeight:600, marginBottom:4, display:"flex", alignItems:"center" }}>
-        {label}{TOOLTIPS[label] && <Tooltip text={TOOLTIPS[label]}/>}
-      </div>
-      {editable
-        ? editing
-          ? <input autoFocus type="number" defaultValue={val}
-              onBlur={e => { onChange(+e.target.value); setEditing(false); }}
-              onKeyDown={e => { if (e.key === "Enter") { onChange(+e.target.value); setEditing(false); } }}
-              style={{ width:"100%", fontSize:18, fontWeight:500, background:"transparent", border:"none", outline:"none", color:"#222" }}/>
-          : <div onClick={() => setEditing(true)} style={{ fontSize:18, fontWeight:500, color:"#222", cursor:"text" }}>{display}</div>
-        : <div style={{ fontSize:18, fontWeight:500, color: highlight ? "#1b5e20" : "#222" }}>{display}</div>}
-    </div>
-  );
-};
 
 const INIT = [
   { id:1,  nome:"Remail",                cap:0,     payout:0,     volErogato:0,    speso:0,       cplOggi:0,     mdOverride:null },
@@ -122,21 +53,54 @@ const INIT = [
   { id:24, nome:"WIND b2b",              cap:100,   payout:30,    volErogato:48,   speso:570,     cplOggi:13,    mdOverride:null },
 ];
 
+const LS = {
+  load: (key, fallback) => { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; } },
+  save: (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
+};
+
 const parseVal = (v) => {
-  if (!v || v.trim() === "" || v.includes("#") || v.trim() === "-" || v.trim() === "- €") return 0;
+  if (!v || v.trim()==="" || v.includes("#") || v.trim()==="-" || v.trim()==="- €") return 0;
   return parseFloat(v.replace(/[€\s]/g,"").replace(/\./g,"").replace(",",".")) || 0;
 };
 
+const EditableCell = ({ value, isOverride, onSave, onReset, integer }) => {
+  const [editing, setEditing] = useState(false);
+  const display = value == null ? "–" : integer ? Math.round(value).toLocaleString("it-IT") : fmt(value);
+  if (editing) return (
+    <input autoFocus type="number" defaultValue={value ?? 0}
+      onBlur={e => { onSave(+e.target.value); setEditing(false); }}
+      onKeyDown={e => { if (e.key==="Enter") { onSave(+e.target.value); setEditing(false); } }}
+      style={{ width:80, fontSize:11, textAlign:"right", border:"none", borderBottom:"1px solid #FF5500", outline:"none", background:"transparent" }}/>
+  );
+  return (
+    <span style={{ display:"flex", alignItems:"center", justifyContent:"flex-end", gap:4 }}>
+      {isOverride && onReset && (
+        <span onClick={onReset} title="Ripristina formula" style={{ fontSize:10, color:"#FF5500", cursor:"pointer" }}>×</span>
+      )}
+      <span onClick={() => setEditing(true)}
+        style={{ fontSize:11, fontWeight:500, cursor:"text", color: isOverride ? "#FF5500" : col(value), textDecoration: isOverride ? "underline dotted" : "none" }}>
+        {display}
+      </span>
+    </span>
+  );
+};
+
 function App() {
-  const [campaigns, setCampaigns] = useState(INIT);
-  const [giorniLav, setGiorniLav] = useState(10);
-  const [margineDEM, setMargineDEM] = useState(14632);
-  const [margineFattoInput, setMargineFattoInput] = useState(63738.30);
-  const [callCenter, setCallCenter] = useState(272);
+  const [campaigns, setCampaigns] = useState(() => LS.load("sm_campaigns", INIT));
+  const [giorniLav, setGiorniLav] = useState(() => LS.load("sm_giorni", 10));
+  const [margineDEM, setMargineDEM] = useState(() => LS.load("sm_dem", 14632));
+  const [margineFattoInput, setMargineFattoInput] = useState(() => LS.load("sm_mft", 63738.30));
+  const [callCenter, setCallCenter] = useState(() => LS.load("sm_cc", 272));
   const [editingId, setEditingId] = useState(null);
   const [editBuf, setEditBuf] = useState({});
   const [csvMsg, setCsvMsg] = useState("");
   const fileRef = useRef();
+
+  useEffect(() => { LS.save("sm_campaigns", campaigns); }, [campaigns]);
+  useEffect(() => { LS.save("sm_giorni", giorniLav); }, [giorniLav]);
+  useEffect(() => { LS.save("sm_dem", margineDEM); }, [margineDEM]);
+  useEffect(() => { LS.save("sm_mft", margineFattoInput); }, [margineFattoInput]);
+  useEffect(() => { LS.save("sm_cc", callCenter); }, [callCenter]);
 
   const rows = useMemo(() => campaigns.map(c => {
     const budgetTotale = c.cap * c.payout;
@@ -157,12 +121,11 @@ function App() {
   const stimaOverall = giorniLav > 0 ? (margineDaSocial + margineDEM) / giorniLav : 0;
   const totale = margineFattoInput + margineDaSocial + margineDEM;
 
-  const updCamp = (id, field, val) => setCampaigns(p => p.map(x => x.id === id ? { ...x, [field]: val } : x));
-  const setMdOverride = (id, val) => setCampaigns(p => p.map(c => c.id === id ? { ...c, mdOverride: val } : c));
-  const resetMdOverride = (id) => setCampaigns(p => p.map(c => c.id === id ? { ...c, mdOverride: null } : c));
-  const startEdit = (c) => { setEditingId(c.id); setEditBuf({ ...c }); };
+  const setMdOverride = (id, val) => setCampaigns(p => p.map(c => c.id===id ? {...c, mdOverride:val} : c));
+  const resetMdOverride = (id) => setCampaigns(p => p.map(c => c.id===id ? {...c, mdOverride:null} : c));
+  const startEdit = (c) => { setEditingId(c.id); setEditBuf({...c}); };
   const saveEdit = () => {
-    setCampaigns(p => p.map(c => c.id === editingId ? {
+    setCampaigns(p => p.map(c => c.id===editingId ? {
       ...editBuf, cap:+editBuf.cap, payout:+editBuf.payout,
       volErogato:+editBuf.volErogato, speso:+editBuf.speso, cplOggi:+editBuf.cplOggi
     } : c));
@@ -174,91 +137,137 @@ function App() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const lines = ev.target.result.trim().split(/\r?\n/);
+      if (lines.length < 2) { setCsvMsg("❌ File vuoto"); return; }
       const sep = lines[0].includes(";") ? ";" : ",";
-      const dataLines = lines.slice(1).filter(l => {
-        const v = l.split(sep)[0]?.trim();
-        return v && !["Somma","Call","Stima","Margine","Totale",""].some(x => v.startsWith(x));
-      });
+      // Leggi intestazioni e mappa le colonne per nome (case insensitive)
+      const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g,"").toLowerCase());
+      const idx = {
+        nome: headers.findIndex(h => h.includes("nome") || h.includes("campagna")),
+        cap:  headers.findIndex(h => h === "cap"),
+        vol:  headers.findIndex(h => h.includes("vol") || h.includes("erogato")),
+        speso:headers.findIndex(h => h.includes("speso")),
+      };
+      const dataLines = lines.slice(1).filter(l => l.split(sep)[idx.nome >= 0 ? idx.nome : 0]?.trim());
       if (!dataLines.length) { setCsvMsg("❌ Nessun dato trovato"); return; }
       const mapped = dataLines.map((l, i) => {
         const v = l.split(sep).map(x => x.trim().replace(/^"|"$/g,""));
-        return { id:i+1, nome:v[0]||`Campagna ${i+1}`, cap:parseVal(v[1]), payout:parseVal(v[2]), volErogato:parseVal(v[4]), speso:parseVal(v[6]), cplOggi:parseVal(v[13]), mdOverride:null };
+        const nome = idx.nome >= 0 ? v[idx.nome] : `Campagna ${i+1}`;
+        // Cerca la campagna esistente per mantenere payout e cplOggi
+        const existing = campaigns.find(c => c.nome.toLowerCase() === nome.toLowerCase());
+        return {
+          id: existing ? existing.id : i+1,
+          nome,
+          cap:        idx.cap   >= 0 ? parseVal(v[idx.cap])   : (existing?.cap   ?? 0),
+          payout:     existing?.payout   ?? 0,
+          volErogato: idx.vol   >= 0 ? parseVal(v[idx.vol])   : (existing?.volErogato ?? 0),
+          speso:      idx.speso >= 0 ? parseVal(v[idx.speso]) : (existing?.speso  ?? 0),
+          cplOggi:    existing?.cplOggi  ?? 0,
+          mdOverride: existing?.mdOverride ?? null,
+        };
       });
       setCampaigns(mapped);
-      setCsvMsg(`✓ ${mapped.length} campagne caricate`);
+      localStorage.setItem("sm_campaigns", JSON.stringify(mapped));
+      setCsvMsg(`✓ ${mapped.length} campagne aggiornate`);
       setTimeout(() => setCsvMsg(""), 4000);
     };
     reader.readAsText(f, "UTF-8");
   };
 
-  const TH = ({ ch, left }) => (
-    <th style={{ padding:"9px 8px", textAlign:left?"left":"right", fontSize:11, fontWeight:600, color:"#fff", whiteSpace:"nowrap", background:"#FF5500", borderBottom:"0.5px solid rgba(255,255,255,0.15)", position:"sticky", top:0, zIndex:1 }}>{ch}</th>
+  const resetAll = () => {
+    if (window.confirm("Resettare tutti i dati ai valori di default?")) {
+      setCampaigns(INIT); setGiorniLav(10); setMargineDEM(14632); setMargineFattoInput(63738.30); setCallCenter(272);
+    }
+  };
+
+  const updCamp = (id, field, val) => setCampaigns(p => p.map(x => x.id===id ? {...x, [field]: val} : x));
+
+  const TH = ({ch, left}) => (
+    <th style={{padding:"9px 8px",textAlign:left?"left":"right",fontSize:11,fontWeight:600,color:"#fff",whiteSpace:"nowrap",background:"#FF5500",borderBottom:"0.5px solid rgba(255,255,255,0.15)",position:"sticky",top:0,zIndex:1}}>{ch}</th>
   );
-  const TD = ({ v, left, bold, color }) => (
-    <td style={{ padding:"6px 8px", textAlign:left?"left":"right", fontSize:11, fontWeight:bold?500:400, whiteSpace:"nowrap", borderBottom:"0.5px solid #f0e8e4", color:color||"#222" }}>{v ?? "–"}</td>
+  const TD = ({v, left, bold, color}) => (
+    <td style={{padding:"6px 8px",textAlign:left?"left":"right",fontSize:11,fontWeight:bold?500:400,whiteSpace:"nowrap",borderBottom:"0.5px solid #f0e8e4",color:color||"#222"}}>{v ?? "–"}</td>
   );
-  const EC = ({ id, field, value, integer }) => (
-    <td style={{ padding:"6px 8px", textAlign:"right", borderBottom:"0.5px solid #f0e8e4" }}>
-      <EditableCell value={value} isOverride={false} onSave={val => updCamp(id, field, val)} onReset={null} integer={integer}/>
+  const EC = ({id, field, value, integer}) => (
+    <td style={{padding:"6px 8px",textAlign:"right",borderBottom:"0.5px solid #f0e8e4"}}>
+      <EditableCell value={value} isOverride={false} onSave={val=>updCamp(id,field,val)} onReset={null} integer={integer}/>
     </td>
   );
 
+  const KPI = ({label, val, editable, highlight, onChange, noEuro}) => {
+    const [editing, setEditing] = useState(false);
+    const display = noEuro ? Number(val).toLocaleString("it-IT") : fmt(val);
+    return (
+      <div style={{background:highlight?"#e8f5e9":"#fff",borderRadius:8,padding:"12px 14px",border:highlight?"1px solid #81c784":"1px solid rgba(255,85,0,0.2)"}}>
+        <div style={{fontSize:11,color:highlight?"#2e7d32":"#FF5500",fontWeight:600,marginBottom:4}}>{label}</div>
+        {editable
+          ? editing
+            ? <input autoFocus type="number" defaultValue={val}
+                onBlur={e=>{onChange(+e.target.value);setEditing(false);}}
+                onKeyDown={e=>{if(e.key==="Enter"){onChange(+e.target.value);setEditing(false);}}}
+                style={{width:"100%",fontSize:18,fontWeight:500,background:"transparent",border:"none",outline:"none",color:"#222"}}/>
+            : <div onClick={()=>setEditing(true)} style={{fontSize:18,fontWeight:500,color:"#222",cursor:"text"}}>{display}</div>
+          : <div style={{fontSize:18,fontWeight:500,color:highlight?"#1b5e20":"#222"}}>{display}</div>}
+      </div>
+    );
+  };
+
   return (
-    <div style={{ background:"linear-gradient(135deg,#fff 65%,#fff3ec 100%)", minHeight:"100vh", fontFamily:"var(--font-sans)" }}>
-      <div style={{ background:"#fff", borderBottom:"3px solid #FF5500", padding:"12px 20px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+    <div style={{minHeight:"100vh"}}>
+      <div style={{background:"#fff",borderBottom:"3px solid #FF5500",padding:"12px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10,boxShadow:"0 2px 8px rgba(255,85,0,0.08)"}}>
         <svg viewBox="0 0 300 70" height="44" xmlns="http://www.w3.org/2000/svg">
           <circle cx="35" cy="35" r="33" fill="#FF5500"/>
           <circle cx="35" cy="35" r="24" fill="#0a0a0a"/>
           <ellipse cx="27" cy="29" rx="4.5" ry="5" fill="#8B5CF6"/>
           <path d="M22 42 Q35 52 48 42" stroke="#8B5CF6" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
-          <text x="76" y="30" fontFamily="'Arial Black',Arial,sans-serif" fontWeight="900" fontSize="22" fill="#FF5500">semplice</text>
-          <text x="76" y="56" fontFamily="'Arial Black',Arial,sans-serif" fontWeight="900" fontSize="20" fill="#8B5CF6" letterSpacing="2">MEDIA</text>
+          <text x="76" y="30" fontFamily="Arial Black, Arial, sans-serif" fontWeight="900" fontSize="22" fill="#FF5500">semplice</text>
+          <text x="76" y="56" fontFamily="Arial Black, Arial, sans-serif" fontWeight="900" fontSize="20" fill="#8B5CF6" letterSpacing="2">MEDIA</text>
         </svg>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <button onClick={() => fileRef.current.click()} style={{ fontSize:12, padding:"6px 14px", color:"#FF5500", border:"1px solid #FF5500", borderRadius:6, background:"#fff8f5", cursor:"pointer", fontWeight:500 }}>↑ Carica CSV</button>
-          <input ref={fileRef} type="file" accept=".csv,.txt" style={{ display:"none" }} onChange={handleFile}/>
-          {csvMsg && <span style={{ fontSize:11, color:csvMsg.startsWith("✓")?"#1a8a4a":"#c0392b" }}>{csvMsg}</span>}
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <button onClick={()=>fileRef.current.click()} style={{fontSize:12,padding:"6px 14px",color:"#FF5500",border:"1px solid #FF5500",borderRadius:6,background:"#fff8f5",cursor:"pointer",fontWeight:500}}>↑ Carica CSV</button>
+          <input ref={fileRef} type="file" accept=".csv,.txt" style={{display:"none"}} onChange={handleFile}/>
+          <button onClick={resetAll} style={{fontSize:12,padding:"6px 14px",color:"#999",border:"1px solid #ddd",borderRadius:6,background:"#fff",cursor:"pointer"}}>Reset</button>
+          {csvMsg && <span style={{fontSize:11,color:csvMsg.startsWith("✓")?"#1a8a4a":"#c0392b"}}>{csvMsg}</span>}
         </div>
       </div>
 
-      <div style={{ padding:"1rem" }}>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:"0.8rem" }}>
+      <div style={{padding:"1rem"}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:"0.8rem"}}>
           <KPI label="Margine fatto totale" val={margineFattoInput} editable onChange={setMargineFattoInput} highlight/>
           <KPI label="Margine da fare social" val={margineDaSocial}/>
           <KPI label="Margine da fare DEM" val={margineDEM} editable onChange={setMargineDEM}/>
           <KPI label="Totale" val={totale} highlight/>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:"1.2rem" }}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:"1.2rem"}}>
           <KPI label="Somma margine day social" val={somma}/>
           <KPI label="Stima margine day overall" val={stimaOverall} highlight/>
           <KPI label="Call center" val={callCenter} editable onChange={setCallCenter}/>
           <KPI label="Giorni lavorativi restanti" val={giorniLav} editable onChange={setGiorniLav} noEuro/>
         </div>
 
-        <div style={{ overflowX:"auto", borderRadius:10, border:"1px solid rgba(255,85,0,0.15)", background:"#fff" }}>
-          <table style={{ width:"100%", borderCollapse:"collapse" }}>
+        <div style={{overflowX:"auto",borderRadius:10,border:"1px solid rgba(255,85,0,0.15)",background:"#fff",boxShadow:"0 1px 6px rgba(255,85,0,0.05)"}}>
+          <table>
             <thead>
               <tr>
-                {[["Nome Campagna",true],["CAP"],["Payout"],["Budget totale"],["Vol. erogato"],["Budget erogato"],["Speso"],["Margine %"],["Margine €"],["Daily Volume"],["Margine day"],["CPL"],[""],["CPL oggi"],["Margine day oggi"],[""]].map(([h,l],i) => (
+                {[["Nome Campagna",true],["CAP"],["Payout"],["Budget totale"],["Vol. erogato"],["Budget erogato"],["Speso"],["Margine %"],["Margine €"],["Daily Volume"],["Margine day"],["CPL"],[""],["CPL oggi"],["Margine day oggi"],[""]].map(([h,l],i)=>(
                   <TH key={i} ch={h} left={!!l}/>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {rows.map((c, ri) => editingId === c.id ? (
-                <tr key={c.id} style={{ background:"#fff8f5" }}>
-                  <td style={{ padding:"5px 6px" }}><input value={editBuf.nome} onChange={e => setEditBuf(b => ({ ...b, nome:e.target.value }))} style={{ width:120, fontSize:11, border:"none", borderBottom:"1px solid #FF5500", outline:"none" }}/></td>
-                  {[["cap"],["payout"],["volErogato"],["speso"],["cplOggi"]].map(([k]) => (
-                    <td key={k} style={{ padding:"5px 6px" }}><input type="number" value={editBuf[k]||""} onChange={e => setEditBuf(b => ({ ...b, [k]:e.target.value }))} style={{ width:65, fontSize:11, textAlign:"right", border:"none", borderBottom:"1px solid #FF5500", outline:"none" }}/></td>
+              {rows.map((c, ri) => editingId===c.id ? (
+                <tr key={c.id} style={{background:"#fff8f5"}}>
+                  <td style={{padding:"5px 6px"}}><input value={editBuf.nome} onChange={e=>setEditBuf(b=>({...b,nome:e.target.value}))} style={{width:120,fontSize:11,border:"none",borderBottom:"1px solid #FF5500",outline:"none"}}/></td>
+                  {[["cap"],["payout"],["volErogato"],["speso"],["cplOggi"]].map(([k])=>(
+                    <td key={k} style={{padding:"5px 6px"}}><input type="number" value={editBuf[k]||""} onChange={e=>setEditBuf(b=>({...b,[k]:e.target.value}))} style={{width:65,fontSize:11,textAlign:"right",border:"none",borderBottom:"1px solid #FF5500",outline:"none"}}/></td>
                   ))}
                   <td colSpan={9}></td>
-                  <td style={{ padding:"5px 6px", whiteSpace:"nowrap" }}>
-                    <button onClick={saveEdit} style={{ fontSize:10, color:"#FF5500", border:"1px solid #FF5500", borderRadius:3, padding:"2px 8px", background:"transparent", cursor:"pointer", marginRight:4 }}>✓ Salva</button>
-                    <button onClick={() => setEditingId(null)} style={{ fontSize:10, color:"#999", border:"1px solid #ccc", borderRadius:3, padding:"2px 8px", background:"transparent", cursor:"pointer" }}>✕</button>
+                  <td style={{padding:"5px 6px",whiteSpace:"nowrap"}}>
+                    <button onClick={saveEdit} style={{fontSize:10,color:"#FF5500",border:"1px solid #FF5500",borderRadius:3,padding:"2px 8px",background:"transparent",cursor:"pointer",marginRight:4}}>✓ Salva</button>
+                    <button onClick={()=>setEditingId(null)} style={{fontSize:10,color:"#999",border:"1px solid #ccc",borderRadius:3,padding:"2px 8px",background:"transparent",cursor:"pointer"}}>✕</button>
                   </td>
                 </tr>
               ) : (
-                <tr key={c.id} style={{ background:ri%2===0?"#fff":"#fff9f6" }}>
+                <tr key={c.id} style={{background:ri%2===0?"#fff":"#fff9f6"}}>
                   <TD v={c.nome} left/>
                   <EC id={c.id} field="cap" value={c.cap>0?c.cap:null} integer/>
                   <TD v={c.payout>0?fmt(c.payout):"–"}/>
@@ -268,23 +277,23 @@ function App() {
                   <EC id={c.id} field="speso" value={c.speso>0?c.speso:null}/>
                   <TD v={pct(c.marginePerc)} color={col(c.marginePerc)}/>
                   <TD v={c.margineEuro!=null?fmt(c.margineEuro):"–"} bold color={col(c.margineEuro)}/>
-                  <TD v={c.dailyVol>0?Math.round(c.dailyVol).toLocaleString("it-IT"):"0"}/>
-                  <td style={{ padding:"6px 8px", textAlign:"right", borderBottom:"0.5px solid #f0e8e4" }}>
-                    <EditableCell value={c.margineDay} isOverride={c.mdOverride!==null} onSave={val => setMdOverride(c.id,val)} onReset={() => resetMdOverride(c.id)}/>
+                  <TD v={c.dailyVol>0?c.dailyVol.toFixed(1):"0"}/>
+                  <td style={{padding:"6px 8px",textAlign:"right",borderBottom:"0.5px solid #f0e8e4"}}>
+                    <EditableCell value={c.margineDay} isOverride={c.mdOverride!==null} onSave={val=>setMdOverride(c.id,val)} onReset={()=>resetMdOverride(c.id)}/>
                   </td>
                   <TD v={c.cpl!=null?fmt(c.cpl):"–"} color="#888"/>
                   <TD v=""/>
                   <EC id={c.id} field="cplOggi" value={c.cplOggi>0?c.cplOggi:null}/>
                   <TD v={c.margineOggi!=null?fmt(c.margineOggi):"–"} bold color={col(c.margineOggi)}/>
-                  <td style={{ padding:"5px 6px", textAlign:"right", borderBottom:"0.5px solid #f0e8e4" }}>
-                    <button onClick={() => startEdit(c)} style={{ fontSize:10, padding:"2px 8px", color:"#FF5500", border:"1px solid #FF5500", borderRadius:3, background:"transparent", cursor:"pointer" }}>modifica</button>
+                  <td style={{padding:"5px 6px",textAlign:"right",borderBottom:"0.5px solid #f0e8e4"}}>
+                    <button onClick={()=>startEdit(c)} style={{fontSize:10,padding:"2px 8px",color:"#FF5500",border:"1px solid #FF5500",borderRadius:3,background:"transparent",cursor:"pointer"}}>modifica</button>
                   </td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
-              <tr style={{ background:"#fff3ec" }}>
-                <td style={{ padding:"7px 8px", fontSize:11, fontWeight:600, color:"#FF5500" }}>Totale</td>
+              <tr style={{background:"#fff3ec"}}>
+                <td style={{padding:"7px 8px",fontSize:11,fontWeight:600,color:"#FF5500"}}>Totale</td>
                 <td colSpan={2}></td>
                 <TD v={fmt(rows.reduce((s,c)=>s+c.budgetTotale,0))} bold/>
                 <TD v={rows.reduce((s,c)=>s+c.volErogato,0).toLocaleString("it-IT")} bold/>
@@ -299,14 +308,15 @@ function App() {
             </tfoot>
           </table>
         </div>
-        <div style={{ fontSize:10, color:"#bbb", marginTop:"0.6rem" }}>
-          Margine % = (Bdg erogato − Speso) / Bdg erogato · Margine day = (Daily Vol × Payout) × Margine % · CPL = Payout − (Payout × Margine %) · Margine day oggi = (Payout − CPL oggi) × Daily Vol
+        <div style={{fontSize:10,color:"#bbb",marginTop:"0.6rem"}}>
+          I dati vengono salvati automaticamente nel browser. Usa il pulsante Reset per ripristinare i valori di default. · Colonne editabili: CAP, Vol. erogato, Speso, Margine day, CPL oggi
         </div>
       </div>
     </div>
   );
 }
- ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>
