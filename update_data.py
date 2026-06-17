@@ -10,7 +10,21 @@ HTML_PATH = "index.html"  # percorso dell'HTML nella repo
 def parse_val(v):
     if not v or v.strip() in ("", "-", "- €", "#DIV/0!"):
         return 0
-    v = v.replace("€", "").replace(" ", "").replace(".", "").replace(",", ".")
+    v = v.strip()
+    # Rimuovi simbolo euro e spazi
+    v = v.replace("€", "").replace(" ", "")
+    # Gestisci formato italiano: punto = separatore migliaia, virgola = decimale
+    # Es: "1.234,56" → "1234.56"
+    # Es: "664,00" → "664.00"
+    # Es: "11,50" → "11.50"
+    # Ma "11.5" (già formato inglese) → "11.5"
+    if "," in v and "." in v:
+        # Formato "1.234,56" → rimuovi punto migliaia, converti virgola in punto
+        v = v.replace(".", "").replace(",", ".")
+    elif "," in v:
+        # Formato "664,00" → converti virgola in punto
+        v = v.replace(",", ".")
+    # Se c'è solo il punto (formato inglese "11.5") lascialo invariato
     try:
         return float(v)
     except:
