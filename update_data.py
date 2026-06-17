@@ -33,7 +33,7 @@ def load_csv(path):
         sep = ";" if ";" in sample else ","
         reader = csv.DictReader(f, delimiter=sep)
         for row in reader:
-            row = {k.strip().lower(): v.strip() for k, v in row.items()}
+            row = {k.strip().lower(): (v.strip() if v is not None else "") for k, v in row.items()}
             nome = row.get("nome campagna") or row.get("nome") or row.get("campagna", "")
             if not nome:
                 continue
