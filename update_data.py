@@ -3,28 +3,23 @@ import json
 import re
 import sys
 from pathlib import Path
+from datetime import datetime
 
-CSV_PATH = "data.csv"   # percorso del CSV nella repo
-HTML_PATH = "index.html"  # percorso dell'HTML nella repo
+CSV_PATH = "data.csv"
+HTML_PATH = "index.html"
 
 def parse_val(v):
     if not v or v.strip() in ("", "-", "- €", "#DIV/0!"):
         return 0
     v = v.strip()
-    # Rimuovi simbolo euro e spazi
     v = v.replace("€", "").replace(" ", "")
-    # Gestisci formato italiano: punto = separatore migliaia, virgola = decimale
-    # Es: "1.234,56" → "1234.56"
-    # Es: "664,00" → "664.00"
-    # Es: "11,50" → "11.50"
-    # Ma "11.5" (già formato inglese) → "11.5"
     if "," in v and "." in v:
-        # Formato "1.234,56" → rimuovi punto migliaia, converti virgola in punto
+        # Formato italiano "1.234,56" → rimuovi punto migliaia, converti virgola
         v = v.replace(".", "").replace(",", ".")
     elif "," in v:
         # Formato "664,00" → converti virgola in punto
         v = v.replace(",", ".")
-    # Se c'è solo il punto (formato inglese "11.5") lascialo invariato
+    # Formato inglese "11.5" → lascia invariato
     try:
         return float(v)
     except:
@@ -33,13 +28,11 @@ def parse_val(v):
 def load_csv(path):
     rows = []
     with open(path, encoding="utf-8-sig") as f:
-        # Rileva separatore
         sample = f.read(1024)
         f.seek(0)
         sep = ";" if ";" in sample else ","
         reader = csv.DictReader(f, delimiter=sep)
         for row in reader:
-            # Normalizza chiavi (lowercase, strip)
             row = {k.strip().lower(): v.strip() for k, v in row.items()}
             nome = row.get("nome campagna") or row.get("nome") or row.get("campagna", "")
             if not nome:
@@ -56,7 +49,8 @@ def load_csv(path):
     return rows
 
 def build_init(rows):
-    lines = ["const INIT = ["]
+    version = datetime.now().strftime("%Y%m%d%H%M")
+    lines = [f'const DATA_VERSION = "{version}";', "const INIT = ["]
     for i, r in enumerate(rows):
         md = "null" if r["mdOverride"] is None or r["mdOverride"] == 0 else str(r["mdOverride"])
         lines.append(
@@ -68,10 +62,10 @@ def build_init(rows):
     lines.append("];")
     return "\n".join(lines)
 
-def update_html(html_path, new_init):
+def update_html(html_path, new_init, rows):
     html = Path(html_path).read_text(encoding="utf-8")
-    # Sostituisce tutto il blocco INIT
-    pattern = r"const INIT = \[[\s\S]*?\];"
+    # Sostituisce INIT con eventuale DATA_VERSION precedente
+    pattern = r'(?:const DATA_VERSION = "[^"]*";\n)?const INIT = \[[\s\S]*?\];'
     if not re.search(pattern, html):
         print("❌ Blocco INIT non trovato nell'HTML")
         sys.exit(1)
@@ -85,4 +79,4 @@ if __name__ == "__main__":
         print("❌ Nessuna riga trovata nel CSV")
         sys.exit(1)
     new_init = build_init(rows)
-    update_html(HTML_PATH, new_init)
+    update_html(HTML_PATH, new_init, rows)
