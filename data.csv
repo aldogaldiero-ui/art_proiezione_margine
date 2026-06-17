@@ -1,25 +1,25 @@
-﻿ Nome Campagna ; CAP ; Volume erogato ; Speso ; Margine day 
- Remail ;;;;
- Ariel ;100;19; 664,00 € ;-50
- Bagni ;100;16; 776,00 € ;-50
- Iberdrola Spagna  ;880;679; 5.803,00 € ;
- Coche ;;;;
- Pianificazione fiscale  ;;;;-40
- Metlife tiktok ;175;72; 1.493,00 € ;
- Metlife Lead ads ;400;202; 890,00 € ;
- Metlife LP ;625;53; 870,00 € ;
- Metlife OTP ;300;271; 2.970,00 € ;
- SKY WIFI  ;120;75; 1.201,00 € ;
- TIM - Mobile ;10870;6634; 48.438,00 € ;
- TIM 24,90 ;143;86; 478,00 € ;
- BMW MOTORAD ;790;281; 1.895,00 € ;
- Ford Approved ;198;147; 1.371,00 € ;
- FORD BLUE ;195;0; -   € ;
- Mach e ;122;1; 1,00 € ;
- FordPRO ;223;192; 3.895,00 € ;
- FORD PRO Elettrico ;34;32; 429,00 € ;
- FORD Flotte ;;;;
- Lexus AWO ;607;363; 7.520,00 € ;
- Kinto ;850;487; 3.896,00 € ;
- WIND ;20;48; 570,00 € ;
- WIND b2b ;100;10; 1.288,00 € ;
+Nome Campagna;CAP;Payout;Vol. erogato;Speso;CPL oggi;Margine day
+Remail;;0;0;;;
+Ariel;100;20;19;664;34.95;-50
+Bagni;100;25;16;776;47.88;-50
+Iberdrola Spagna;880;11;679;5803;9;
+Coche;;13;;;;
+Pianificazione fiscale;;0;;;;-40
+Metlife tiktok;175;16;72;1493;21;
+Metlife OTP;400;16;202;890;11;
+Metlife LP;625;20;53;870;18;
+Metlife lead ads;300;7.5;271;2970;;
+SKY WIFI;120;25;75;1201;16.13;
+TIM - Mobile;10870;11.5;6634;48438;6;
+TIM 24,90;143;14;86;478;8;
+BMW MOTORAD;790;19;281;1895;12;
+Ford Approved;198;12;147;1371;10;
+FORD BLUE;195;15;0;;;
+Mach e;122;17;1;1;;
+FordPRO;223;17;192;3895;21;
+FORD PRO Elettrico;34;30;32;429;;
+FORD Flotte;;25;;;;
+Lexus AWO;607;28;363;7520;21;
+Kinto;850;20;487;3896;16;
+WIND;20;155;48;570;150;
+WIND b2b;100;30;10;1288;13;
