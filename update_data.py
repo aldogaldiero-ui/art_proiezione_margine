@@ -34,9 +34,9 @@ def load_csv(path):
         reader = csv.DictReader(f, delimiter=sep)
         for row in reader:
             row = {k.strip().lower(): (v.strip() if v is not None else "") for k, v in row.items()}
-            nome = row.get("nome campagna") or row.get("nome") or row.get("campagna", "")
-            if not nome:
-                continue
+           nome = row.get("nome campagna") or row.get("nome") or row.get("campagna", "")
+                if not nome or nome.startswith("__"):
+            continue
             rows.append({
                 "nome":       nome,
                 "cap":        parse_val(row.get("cap", "")),
