@@ -139,30 +139,38 @@ function App() {
       const lines = ev.target.result.trim().split(/\r?\n/);
       if (lines.length < 2) { setCsvMsg("❌ File vuoto"); return; }
       const sep = lines[0].includes(";") ? ";" : ",";
-      // Leggi intestazioni e mappa le colonne per nome (case insensitive)
       const headers = lines[0].split(sep).map(h => h.trim().replace(/^"|"$/g,"").toLowerCase());
       const idx = {
-        nome: headers.findIndex(h => h.includes("nome") || h.includes("campagna")),
-        cap:  headers.findIndex(h => h === "cap"),
-        vol:  headers.findIndex(h => h.includes("vol") || h.includes("erogato")),
-        speso:headers.findIndex(h => h.includes("speso")),
+        nome:      headers.findIndex(h => h.includes("nome") || h.includes("campagna")),
+        cap:       headers.findIndex(h => h === "cap"),
+        vol:       headers.findIndex(h => h.includes("vol") || h.includes("erogato")),
+        speso:     headers.findIndex(h => h.includes("speso")),
+        margineDay:headers.findIndex(h => h.includes("margine day") || h === "margine_day" || h === "margineday"),
+        cplOggi:   headers.findIndex(h => h.includes("cpl oggi") || h === "cpl_oggi" || h === "cploggi"),
       };
       const dataLines = lines.slice(1).filter(l => l.split(sep)[idx.nome >= 0 ? idx.nome : 0]?.trim());
       if (!dataLines.length) { setCsvMsg("❌ Nessun dato trovato"); return; }
       const mapped = dataLines.map((l, i) => {
         const v = l.split(sep).map(x => x.trim().replace(/^"|"$/g,""));
         const nome = idx.nome >= 0 ? v[idx.nome] : `Campagna ${i+1}`;
-        // Cerca la campagna esistente per mantenere payout e cplOggi
         const existing = campaigns.find(c => c.nome.toLowerCase() === nome.toLowerCase());
+        // Margine day: se presente nel CSV usalo come override, altrimenti mantieni quello esistente
+        const mdCsv = idx.margineDay >= 0 && v[idx.margineDay] && !v[idx.margineDay].includes("#") && v[idx.margineDay].trim() !== "" && v[idx.margineDay].trim() !== "-"
+          ? parseVal(v[idx.margineDay]) : null;
+        const mdOverride = mdCsv !== null ? mdCsv : (existing?.mdOverride ?? null);
+        // CPL oggi: se presente nel CSV usalo, altrimenti mantieni quello esistente
+        const cplCsv = idx.cplOggi >= 0 && v[idx.cplOggi] && v[idx.cplOggi].trim() !== "" && v[idx.cplOggi].trim() !== "-"
+          ? parseVal(v[idx.cplOggi]) : null;
+        const cplOggi = cplCsv !== null ? cplCsv : (existing?.cplOggi ?? 0);
         return {
-          id: existing ? existing.id : i+1,
+          id:         existing ? existing.id : i+1,
           nome,
           cap:        idx.cap   >= 0 ? parseVal(v[idx.cap])   : (existing?.cap   ?? 0),
           payout:     existing?.payout   ?? 0,
           volErogato: idx.vol   >= 0 ? parseVal(v[idx.vol])   : (existing?.volErogato ?? 0),
           speso:      idx.speso >= 0 ? parseVal(v[idx.speso]) : (existing?.speso  ?? 0),
-          cplOggi:    existing?.cplOggi  ?? 0,
-          mdOverride: existing?.mdOverride ?? null,
+          cplOggi,
+          mdOverride,
         };
       });
       setCampaigns(mapped);
