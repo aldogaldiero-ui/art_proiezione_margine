@@ -80,7 +80,7 @@ def build_init(rows, giorni=10):
 def update_html(html_path, new_init, rows):
     html = Path(html_path).read_text(encoding="utf-8")
     # Sostituisce INIT con eventuale DATA_VERSION precedente
-    pattern = r'(?:const DATA_VERSION = "[^"]*";\n)?const INIT = \[[\s\S]*?\];'
+    pattern = r'(?:const DATA_VERSION = "[^"]*";\n)?(?:const GIORNI_DEFAULT = \d+;\n)?const INIT = \[[\s\S]*?\];'
     if not re.search(pattern, html):
         print("❌ Blocco INIT non trovato nell'HTML")
         sys.exit(1)
