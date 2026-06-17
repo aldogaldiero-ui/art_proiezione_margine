@@ -48,9 +48,24 @@ def load_csv(path):
             })
     return rows
 
-def build_init(rows):
+def load_meta(rows_raw):
+    """Estrae metadati dalle righe speciali che iniziano con __"""
+    meta = {}
+    for row in rows_raw:
+        nome = list(row.values())[0].strip()
+        if nome.startswith("__") and nome.endswith("__"):
+            key = nome.strip("_")
+            val = list(row.values())[1] if len(row) > 1 else ""
+            meta[key] = val.strip()
+    return meta
+
+def build_init(rows, giorni=10):
     version = datetime.now().strftime("%Y%m%d%H%M")
-    lines = [f'const DATA_VERSION = "{version}";', "const INIT = ["]
+    lines = [
+        f'const DATA_VERSION = "{version}";',
+        f'const GIORNI_DEFAULT = {giorni};',
+        "const INIT = ["
+    ]
     for i, r in enumerate(rows):
         md = "null" if r["mdOverride"] is None or r["mdOverride"] == 0 else str(r["mdOverride"])
         lines.append(
@@ -80,3 +95,5 @@ if __name__ == "__main__":
         sys.exit(1)
     new_init = build_init(rows)
     update_html(HTML_PATH, new_init, rows)
+
+
