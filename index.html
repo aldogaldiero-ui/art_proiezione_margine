@@ -251,14 +251,7 @@ function App() {
   return (
     <div style={{minHeight:"100vh"}}>
       <div style={{background:"#fff",borderBottom:"3px solid #FF5500",padding:"12px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10,boxShadow:"0 2px 8px rgba(255,85,0,0.08)"}}>
-        <svg viewBox="0 0 300 70" height="44" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="35" cy="35" r="33" fill="#FF5500"/>
-          <circle cx="35" cy="35" r="24" fill="#0a0a0a"/>
-          <ellipse cx="27" cy="29" rx="4.5" ry="5" fill="#8B5CF6"/>
-          <path d="M22 42 Q35 52 48 42" stroke="#8B5CF6" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
-          <text x="76" y="30" fontFamily="Arial Black, Arial, sans-serif" fontWeight="900" fontSize="22" fill="#FF5500">semplice</text>
-          <text x="76" y="56" fontFamily="Arial Black, Arial, sans-serif" fontWeight="900" fontSize="20" fill="#8B5CF6" letterSpacing="2">MEDIA</text>
-        </svg>
+       <img src="https://semplicemedia.it/static/logo-brand-55430fe85c96e0d40876912373d2a173.png" alt="Logo" style={{height:44, objectFit:"contain"}}/>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <button onClick={()=>fileRef.current.click()} style={{fontSize:12,padding:"6px 14px",color:"#FF5500",border:"1px solid #FF5500",borderRadius:6,background:"#fff8f5",cursor:"pointer",fontWeight:500}}>↑ Carica CSV</button>
           <input ref={fileRef} type="file" accept=".csv,.txt" style={{display:"none"}} onChange={handleFile}/>
