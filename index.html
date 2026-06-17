@@ -26,6 +26,33 @@ const fmt = (n) => "€ " + Number(n).toLocaleString("it-IT", { minimumFractionD
 const pct = (n) => (n == null || !isFinite(n)) ? "#DIV/0!" : n.toFixed(1) + "%";
 const col = (v) => v == null ? "#aaa" : v < 0 ? "#c0392b" : v > 0 ? "#1a8a4a" : "#aaa";
 
+ const TOOLTIPS = {
+  "Margine fatto totale": "Margine economico già generato fino ad oggi. Inserito manualmente.",
+  "Margine da fare social": "Margine ancora producibile dalle campagne social. Formula: Somma × Giorni restanti.",
+  "Margine da fare DEM": "Margine previsto dalle campagne DEM. Inserito manualmente.",
+  "Totale": "Previsione margine finale. Formula: Fatto + Da fare social + Da fare DEM.",
+  "Somma margine day social": "Margine giornaliero netto social. Formula: Σ Margine day − Call center.",
+  "Stima margine day overall": "Proiezione giornaliera complessiva. Formula: (Da fare social + DEM) ÷ Giorni.",
+  "Call center": "Costo giornaliero call center, sottratto dal margine day lordo.",
+  "Giorni lavorativi restanti": "Giorni lavorativi (lun–ven) rimanenti. Usato per tutte le proiezioni.",
+};
+
+const Tooltip = ({ text }) => {
+  const [show, setShow] = useState(false);
+  return (
+    <span style={{ position:"relative", display:"inline-block", marginLeft:5, cursor:"help" }}
+      onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
+      <span style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", width:14, height:14, borderRadius:"50%", background:"#FF5500", color:"#fff", fontSize:9, fontWeight:700 }}>?</span>
+      {show && (
+        <span style={{ position:"absolute", bottom:"calc(100% + 6px)", left:"50%", transform:"translateX(-50%)", background:"#333", color:"#fff", fontSize:11, padding:"6px 10px", borderRadius:6, width:200, zIndex:100, lineHeight:1.5, boxShadow:"0 2px 8px rgba(0,0,0,0.2)", whiteSpace:"normal" }}>
+          {text}
+          <span style={{ position:"absolute", top:"100%", left:"50%", transform:"translateX(-50%)", borderWidth:5, borderStyle:"solid", borderColor:"#333 transparent transparent transparent" }}/>
+        </span>
+      )}
+    </span>
+  );
+};
+
 const INIT = [
   { id:1,  nome:"Remail",                cap:0,     payout:0,     volErogato:0,    speso:0,       cplOggi:0,     mdOverride:null },
   { id:2,  nome:"Ariel",                 cap:100,   payout:20,    volErogato:19,   speso:664,     cplOggi:34.95, mdOverride:null },
