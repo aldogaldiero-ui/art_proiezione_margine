@@ -122,7 +122,11 @@ function App() {
   }
   return LS.load("sm_campaigns", INIT);
 });
-  const [giorniLav, setGiorniLav] = useState(() => LS.load("sm_giorni", 10));
+  const [giorniLav, setGiorniLav] = useState(() => {
+  const savedVersion = LS.load("sm_data_version", null);
+  if (savedVersion !== DATA_VERSION) return GIORNI_DEFAULT;
+  return LS.load("sm_giorni", GIORNI_DEFAULT);
+});
   const [margineDEM, setMargineDEM] = useState(() => LS.load("sm_dem", 14632));
   const [margineFattoInput, setMargineFattoInput] = useState(() => LS.load("sm_mft", 63738.30));
   const [callCenter, setCallCenter] = useState(() => LS.load("sm_cc", 272));
