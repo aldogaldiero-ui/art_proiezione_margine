@@ -27,14 +27,14 @@ const pct = (n) => (n == null || !isFinite(n)) ? "#DIV/0!" : n.toFixed(1) + "%";
 const col = (v) => v == null ? "#aaa" : v < 0 ? "#c0392b" : v > 0 ? "#1a8a4a" : "#aaa";
 
  const TOOLTIPS = {
-  "Margine fatto totale": "Margine economico già generato fino ad oggi. Inserito manualmente.",
-  "Margine da fare social": "Margine ancora producibile dalle campagne social. Formula: Somma × Giorni restanti.",
-  "Margine da fare DEM": "Margine previsto dalle campagne DEM. Inserito manualmente.",
-  "Totale": "Previsione margine finale. Formula: Fatto + Da fare social + Da fare DEM.",
-  "Somma margine day social": "Margine giornaliero netto social. Formula: Σ Margine day − Call center.",
-  "Stima margine day overall": "Proiezione giornaliera complessiva. Formula: (Da fare social + DEM) ÷ Giorni.",
-  "Call center": "Costo giornaliero call center, sottratto dal margine day lordo.",
-  "Giorni lavorativi restanti": "Giorni lavorativi (lun–ven) rimanenti. Usato per tutte le proiezioni.",
+  "Margine fatto totale": "Margine economico già generato fino ad oggi.",
+  "Margine da fare social": "Margine ancora producibile dalle campagne social.",
+  "Margine da fare DEM": "Margine ancora producibile dalle campagne DEM.",
+  "Totale": "Previsione margine finale totale.",
+  "Somma margine day social": "Margine giornaliero netto social.",
+  "Stima margine day overall": "Proiezione giornaliera complessiva social + DEM",
+  "Call center": "Costo giornaliero call center.",
+  "Giorni lavorativi restanti": "Giorni lavorativi (lun–ven) rimanenti.",
 };
 
 const Tooltip = ({ text }) => {
