@@ -14,12 +14,9 @@ def parse_val(v):
     v = v.strip()
     v = v.replace("€", "").replace(" ", "")
     if "," in v and "." in v:
-        # Formato italiano "1.234,56" → rimuovi punto migliaia, converti virgola
         v = v.replace(".", "").replace(",", ".")
     elif "," in v:
-        # Formato "664,00" → converti virgola in punto
         v = v.replace(",", ".")
-    # Formato inglese "11.5" → lascia invariato
     try:
         return float(v)
     except:
@@ -34,9 +31,9 @@ def load_csv(path):
         reader = csv.DictReader(f, delimiter=sep)
         for row in reader:
             row = {k.strip().lower(): (v.strip() if v is not None else "") for k, v in row.items()}
-           nome = row.get("nome campagna") or row.get("nome") or row.get("campagna", "")
-           if not nome or nome.startswith("__"):
-               continue
+            nome = row.get("nome campagna") or row.get("nome") or row.get("campagna", "")
+            if not nome or nome.startswith("__"):
+                continue
             rows.append({
                 "nome":       nome,
                 "cap":        parse_val(row.get("cap", "")),
@@ -49,14 +46,16 @@ def load_csv(path):
     return rows
 
 def load_meta(rows_raw):
-    """Estrae metadati dalle righe speciali che iniziano con __"""
     meta = {}
     for row in rows_raw:
-        nome = list(row.values())[0].strip()
+        nome = list(row.values())[0]
+        if nome is None:
+            continue
+        nome = nome.strip()
         if nome.startswith("__") and nome.endswith("__"):
             key = nome.strip("_")
             val = list(row.values())[1] if len(row) > 1 else ""
-            meta[key] = val.strip()
+            meta[key] = (val.strip() if val else "")
     return meta
 
 def build_init(rows, giorni=10):
@@ -79,7 +78,6 @@ def build_init(rows, giorni=10):
 
 def update_html(html_path, new_init, rows):
     html = Path(html_path).read_text(encoding="utf-8")
-    # Sostituisce INIT con eventuale DATA_VERSION precedente
     pattern = r'(?:const DATA_VERSION = "[^"]*";\n)?(?:const GIORNI_DEFAULT = \d+;\n)?const INIT = \[[\s\S]*?\];'
     if not re.search(pattern, html):
         print("❌ Blocco INIT non trovato nell'HTML")
@@ -107,4 +105,3 @@ if __name__ == "__main__":
         sys.exit(1)
     new_init = build_init(rows, giorni)
     update_html(HTML_PATH, new_init, rows)
-
