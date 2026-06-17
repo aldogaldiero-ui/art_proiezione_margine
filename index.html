@@ -233,7 +233,9 @@ function App() {
     const display = noEuro ? Number(val).toLocaleString("it-IT") : fmt(val);
     return (
       <div style={{background:highlight?"#e8f5e9":"#fff",borderRadius:8,padding:"12px 14px",border:highlight?"1px solid #81c784":"1px solid rgba(255,85,0,0.2)"}}>
-        <div style={{fontSize:11,color:highlight?"#2e7d32":"#FF5500",fontWeight:600,marginBottom:4}}>{label}</div>
+       <div style={{fontSize:11,color:highlight?"#2e7d32":"#FF5500",fontWeight:600,marginBottom:4,display:"flex",alignItems:"center"}}>
+  {label}{TOOLTIPS[label] && <Tooltip text={TOOLTIPS[label]}/>}
+</div>
         {editable
           ? editing
             ? <input autoFocus type="number" defaultValue={val}
