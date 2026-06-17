@@ -1,0 +1,35 @@
+name: Aggiorna dati dashboard
+
+on:
+  # Si attiva automaticamente ogni volta che carichi un nuovo data.csv
+  push:
+    paths:
+      - "data.csv"
+  # Oppure lancia manualmente dal tab Actions su GitHub
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Esegui script di aggiornamento
+        run: python update_data.py
+
+      - name: Commit e push se ci sono modifiche
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --staged --quiet || git commit -m "Auto-update dati dashboard $(date +'%Y-%m-%d')"
+          git push
