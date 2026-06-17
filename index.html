@@ -285,7 +285,7 @@ function App() {
                   <EC id={c.id} field="speso" value={c.speso>0?c.speso:null}/>
                   <TD v={pct(c.marginePerc)} color={col(c.marginePerc)}/>
                   <TD v={c.margineEuro!=null?fmt(c.margineEuro):"–"} bold color={col(c.margineEuro)}/>
-                  <TD v={c.dailyVol>0?c.dailyVol.toFixed(1):"0"}/>
+                  <TD v={c.dailyVol>0?Math.round(c.dailyVol).toLocaleString("it-IT"):"0"}/>
                   <td style={{padding:"6px 8px",textAlign:"right",borderBottom:"0.5px solid #f0e8e4"}}>
                     <EditableCell value={c.margineDay} isOverride={c.mdOverride!==null} onSave={val=>setMdOverride(c.id,val)} onReset={()=>resetMdOverride(c.id)}/>
                   </td>
