@@ -58,11 +58,14 @@ def load_meta(rows_raw):
             meta[key] = (val.strip() if val else "")
     return meta
 
-def build_init(rows, giorni=10):
+def build_init(rows, giorni=10, margine_fatto=63738.30, margine_dem=14632, call_center=272):
     version = datetime.now().strftime("%Y%m%d%H%M")
     lines = [
         f'const DATA_VERSION = "{version}";',
         f'const GIORNI_DEFAULT = {giorni};',
+        f'const MARGINE_FATTO_DEFAULT = {margine_fatto};',
+        f'const MARGINE_DEM_DEFAULT = {margine_dem};',
+        f'const CALL_CENTER_DEFAULT = {call_center};',
         "const INIT = ["
     ]
     for i, r in enumerate(rows):
@@ -78,7 +81,7 @@ def build_init(rows, giorni=10):
 
 def update_html(html_path, new_init, rows):
     html = Path(html_path).read_text(encoding="utf-8")
-    pattern = r'(?:const DATA_VERSION = "[^"]*";\n)?(?:const GIORNI_DEFAULT = \d+;\n)?const INIT = \[[\s\S]*?\];'
+    pattern = r'(?:const DATA_VERSION = "[^"]*";\n)?(?:const GIORNI_DEFAULT = [\d.]+;\n)?(?:const MARGINE_FATTO_DEFAULT = [\d.]+;\n)?(?:const MARGINE_DEM_DEFAULT = [\d.]+;\n)?(?:const CALL_CENTER_DEFAULT = [\d.]+;\n)?const INIT = \[[\s\S]*?\];'
     if not re.search(pattern, html):
         print("❌ Blocco INIT non trovato nell'HTML")
         sys.exit(1)
