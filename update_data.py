@@ -99,7 +99,7 @@ if __name__ == "__main__":
         for row in reader:
             rows_raw.append(dict(row))
 
-   meta = load_meta(rows_raw)
+    meta = load_meta(rows_raw)
     giorni = int(meta.get("giorni", 10))
     margine_fatto = float(meta.get("margine_fatto", 63738.30))
     margine_dem = float(meta.get("margine_dem", 14632))
