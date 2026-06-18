@@ -128,9 +128,21 @@ function App() {
   if (savedVersion !== DATA_VERSION) return GIORNI_DEFAULT;
   return LS.load("sm_giorni", GIORNI_DEFAULT);
 });
-  const [margineDEM, setMargineDEM] = useState(() => LS.load("sm_dem", 14632));
-  const [margineFattoInput, setMargineFattoInput] = useState(() => LS.load("sm_mft", 63738.30));
-  const [callCenter, setCallCenter] = useState(() => LS.load("sm_cc", 272));
+ const [margineDEM, setMargineDEM] = useState(() => {
+  const savedVersion = LS.load("sm_data_version", null);
+  if (savedVersion !== DATA_VERSION) return MARGINE_DEM_DEFAULT;
+  return LS.load("sm_dem", MARGINE_DEM_DEFAULT);
+});
+const [margineFattoInput, setMargineFattoInput] = useState(() => {
+  const savedVersion = LS.load("sm_data_version", null);
+  if (savedVersion !== DATA_VERSION) return MARGINE_FATTO_DEFAULT;
+  return LS.load("sm_mft", MARGINE_FATTO_DEFAULT);
+});
+const [callCenter, setCallCenter] = useState(() => {
+  const savedVersion = LS.load("sm_data_version", null);
+  if (savedVersion !== DATA_VERSION) return CALL_CENTER_DEFAULT;
+  return LS.load("sm_cc", CALL_CENTER_DEFAULT);
+});
   const [editingId, setEditingId] = useState(null);
   const [editBuf, setEditBuf] = useState({});
   const [csvMsg, setCsvMsg] = useState("");
