@@ -99,12 +99,15 @@ if __name__ == "__main__":
         for row in reader:
             rows_raw.append(dict(row))
 
-    meta = load_meta(rows_raw)
+   meta = load_meta(rows_raw)
     giorni = int(meta.get("giorni", 10))
+    margine_fatto = float(meta.get("margine_fatto", 63738.30))
+    margine_dem = float(meta.get("margine_dem", 14632))
+    call_center = float(meta.get("call_center", 272))
 
     rows = load_csv(CSV_PATH)
     if not rows:
         print("❌ Nessuna riga trovata nel CSV")
         sys.exit(1)
-    new_init = build_init(rows, giorni)
+    new_init = build_init(rows, giorni, margine_fatto, margine_dem, call_center)
     update_html(HTML_PATH, new_init, rows)
