@@ -26,14 +26,17 @@ const fmt = (n) => "€ " + Number(n).toLocaleString("it-IT", { minimumFractionD
 const pct = (n) => (n == null || !isFinite(n)) ? "#DIV/0!" : n.toFixed(1) + "%";
 const col = (v) => v == null ? "#aaa" : v < 0 ? "#c0392b" : v > 0 ? "#1a8a4a" : "#aaa";
 
- const TOOLTIPS = {
-  "Margine totale as is": "Margine economico già generato fino ad oggi.",
+const TOOLTIPS = {
   "Forcast margine social": "Margine ancora producibile dalle campagne social.",
   "Forcast margine DEM": "Margine ancora producibile dalle campagne DEM.",
   "Forcast totale": "Previsione margine finale totale.",
-  "Forcast Margine day social": "Margine giornaliero netto social.",
-  "Forcast margine day totale": "Proiezione giornaliera complessiva social + DEM",
-  "Call center": "Costo giornaliero call center.",
+  "Margine Social": "Margine fatto ad oggi dai social.",
+  "Margine DEM": "Margine fatto ad oggi dalle DEM.",
+  "Margine totale as is": "Margine economico totale già generato fino ad oggi.",
+  "Forcast Margine day social": "Margine giornaliero netto social. Formula: Σ Margine day − Costo call center.",
+  "Forcast Margine day DEM": "Proiezione margine giornaliero DEM. Formula: Forcast margine DEM ÷ Giorni restanti.",
+  "Forcast margine day totale": "Proiezione giornaliera complessiva social + DEM.",
+  "Costo call center giornaliero": "Costo giornaliero del call center.",
   "Giorni lavorativi restanti": "Giorni lavorativi (lun–ven) rimanenti.",
 };
 
@@ -53,11 +56,13 @@ const Tooltip = ({ text }) => {
   );
 };
 
-const DATA_VERSION = "202606190843";
+const DATA_VERSION = "202606180816";
 const GIORNI_DEFAULT = 9;
 const MARGINE_FATTO_DEFAULT = 70817.6;
 const MARGINE_DEM_DEFAULT = 12085.0;
 const CALL_CENTER_DEFAULT = 272.0;
+const MARGINE_SOCIAL_DEFAULT = 0;
+const MARGINE_DEM_FATTO_DEFAULT = 0;
 const INIT = [
   { id:1, nome:"Remail", cap:0.0, payout:0.0, volErogato:0.0, speso:0.0, cplOggi:0, mdOverride:null },
   { id:2, nome:"Ariel", cap:100.0, payout:20.0, volErogato:21.0, speso:732.0, cplOggi:34.85, mdOverride:-50.0 },
@@ -119,33 +124,40 @@ const EditableCell = ({ value, isOverride, onSave, onReset, integer }) => {
 
 function App() {
   const [campaigns, setCampaigns] = useState(() => {
-  const savedVersion = LS.load("sm_data_version", null);
-  if (savedVersion !== DATA_VERSION) {
-    LS.save("sm_data_version", DATA_VERSION);
-    return INIT;
-  }
-  return LS.load("sm_campaigns", INIT);
-});
+    const savedVersion = LS.load("sm_data_version", null);
+    if (savedVersion !== DATA_VERSION) { LS.save("sm_data_version", DATA_VERSION); return INIT; }
+    return LS.load("sm_campaigns", INIT);
+  });
   const [giorniLav, setGiorniLav] = useState(() => {
-  const savedVersion = LS.load("sm_data_version", null);
-  if (savedVersion !== DATA_VERSION) return GIORNI_DEFAULT;
-  return LS.load("sm_giorni", GIORNI_DEFAULT);
-});
- const [margineDEM, setMargineDEM] = useState(() => {
-  const savedVersion = LS.load("sm_data_version", null);
-  if (savedVersion !== DATA_VERSION) return MARGINE_DEM_DEFAULT;
-  return LS.load("sm_dem", MARGINE_DEM_DEFAULT);
-});
-const [margineFattoInput, setMargineFattoInput] = useState(() => {
-  const savedVersion = LS.load("sm_data_version", null);
-  if (savedVersion !== DATA_VERSION) return MARGINE_FATTO_DEFAULT;
-  return LS.load("sm_mft", MARGINE_FATTO_DEFAULT);
-});
-const [callCenter, setCallCenter] = useState(() => {
-  const savedVersion = LS.load("sm_data_version", null);
-  if (savedVersion !== DATA_VERSION) return CALL_CENTER_DEFAULT;
-  return LS.load("sm_cc", CALL_CENTER_DEFAULT);
-});
+    const savedVersion = LS.load("sm_data_version", null);
+    if (savedVersion !== DATA_VERSION) return GIORNI_DEFAULT;
+    return LS.load("sm_giorni", GIORNI_DEFAULT);
+  });
+  const [margineDEM, setMargineDEM] = useState(() => {
+    const savedVersion = LS.load("sm_data_version", null);
+    if (savedVersion !== DATA_VERSION) return MARGINE_DEM_DEFAULT;
+    return LS.load("sm_dem", MARGINE_DEM_DEFAULT);
+  });
+  const [margineFattoInput, setMargineFattoInput] = useState(() => {
+    const savedVersion = LS.load("sm_data_version", null);
+    if (savedVersion !== DATA_VERSION) return MARGINE_FATTO_DEFAULT;
+    return LS.load("sm_mft", MARGINE_FATTO_DEFAULT);
+  });
+  const [callCenter, setCallCenter] = useState(() => {
+    const savedVersion = LS.load("sm_data_version", null);
+    if (savedVersion !== DATA_VERSION) return CALL_CENTER_DEFAULT;
+    return LS.load("sm_cc", CALL_CENTER_DEFAULT);
+  });
+  const [margineSocial, setMargineSocial] = useState(() => {
+    const savedVersion = LS.load("sm_data_version", null);
+    if (savedVersion !== DATA_VERSION) return MARGINE_SOCIAL_DEFAULT;
+    return LS.load("sm_msocial", MARGINE_SOCIAL_DEFAULT);
+  });
+  const [margineDemFatto, setMargineDemFatto] = useState(() => {
+    const savedVersion = LS.load("sm_data_version", null);
+    if (savedVersion !== DATA_VERSION) return MARGINE_DEM_FATTO_DEFAULT;
+    return LS.load("sm_mdemfatto", MARGINE_DEM_FATTO_DEFAULT);
+  });
   const [editingId, setEditingId] = useState(null);
   const [editBuf, setEditBuf] = useState({});
   const [csvMsg, setCsvMsg] = useState("");
@@ -156,6 +168,8 @@ const [callCenter, setCallCenter] = useState(() => {
   useEffect(() => { LS.save("sm_dem", margineDEM); }, [margineDEM]);
   useEffect(() => { LS.save("sm_mft", margineFattoInput); }, [margineFattoInput]);
   useEffect(() => { LS.save("sm_cc", callCenter); }, [callCenter]);
+  useEffect(() => { LS.save("sm_msocial", margineSocial); }, [margineSocial]);
+  useEffect(() => { LS.save("sm_mdemfatto", margineDemFatto); }, [margineDemFatto]);
 
   const rows = useMemo(() => campaigns.map(c => {
     const budgetTotale = c.cap * c.payout;
@@ -173,8 +187,10 @@ const [callCenter, setCallCenter] = useState(() => {
   const totMargineDay = rows.reduce((s, r) => s + (r.margineDay ?? 0), 0);
   const somma = totMargineDay - callCenter;
   const margineDaSocial = somma * giorniLav;
-  const stimaOverall = giorniLav > 0 ? (margineDaSocial + margineDEM) / giorniLav : 0;
-  const totale = margineFattoInput + margineDaSocial + margineDEM;
+  const forcastDemDay = giorniLav > 0 ? margineDEM / giorniLav : 0;
+  const stimaOverall = somma + forcastDemDay;
+  const margineTotaleAsIs = margineSocial + margineDemFatto;
+  const forcastTotale = margineTotaleAsIs + margineDaSocial + margineDEM;
 
   const setMdOverride = (id, val) => setCampaigns(p => p.map(c => c.id===id ? {...c, mdOverride:val} : c));
   const resetMdOverride = (id) => setCampaigns(p => p.map(c => c.id===id ? {...c, mdOverride:null} : c));
@@ -209,23 +225,19 @@ const [callCenter, setCallCenter] = useState(() => {
         const v = l.split(sep).map(x => x.trim().replace(/^"|"$/g,""));
         const nome = idx.nome >= 0 ? v[idx.nome] : `Campagna ${i+1}`;
         const existing = campaigns.find(c => c.nome.toLowerCase() === nome.toLowerCase());
-        // Margine day: se presente nel CSV usalo come override, altrimenti mantieni quello esistente
         const mdCsv = idx.margineDay >= 0 && v[idx.margineDay] && !v[idx.margineDay].includes("#") && v[idx.margineDay].trim() !== "" && v[idx.margineDay].trim() !== "-"
           ? parseVal(v[idx.margineDay]) : null;
         const mdOverride = mdCsv !== null ? mdCsv : (existing?.mdOverride ?? null);
-        // CPL oggi: se presente nel CSV usalo, altrimenti mantieni quello esistente
         const cplCsv = idx.cplOggi >= 0 && v[idx.cplOggi] && v[idx.cplOggi].trim() !== "" && v[idx.cplOggi].trim() !== "-"
           ? parseVal(v[idx.cplOggi]) : null;
         const cplOggi = cplCsv !== null ? cplCsv : (existing?.cplOggi ?? 0);
         return {
-          id:         existing ? existing.id : i+1,
-          nome,
-          cap:        idx.cap   >= 0 ? parseVal(v[idx.cap])   : (existing?.cap   ?? 0),
-          payout:     existing?.payout   ?? 0,
-          volErogato: idx.vol   >= 0 ? parseVal(v[idx.vol])   : (existing?.volErogato ?? 0),
-          speso:      idx.speso >= 0 ? parseVal(v[idx.speso]) : (existing?.speso  ?? 0),
-          cplOggi,
-          mdOverride,
+          id: existing ? existing.id : i+1, nome,
+          cap: idx.cap >= 0 ? parseVal(v[idx.cap]) : (existing?.cap ?? 0),
+          payout: existing?.payout ?? 0,
+          volErogato: idx.vol >= 0 ? parseVal(v[idx.vol]) : (existing?.volErogato ?? 0),
+          speso: idx.speso >= 0 ? parseVal(v[idx.speso]) : (existing?.speso ?? 0),
+          cplOggi, mdOverride,
         };
       });
       setCampaigns(mapped);
@@ -238,7 +250,9 @@ const [callCenter, setCallCenter] = useState(() => {
 
   const resetAll = () => {
     if (window.confirm("Resettare tutti i dati ai valori di default?")) {
-      setCampaigns(INIT); setGiorniLav(10); setMargineDEM(14632); setMargineFattoInput(63738.30); setCallCenter(272);
+      setCampaigns(INIT); setGiorniLav(GIORNI_DEFAULT); setMargineDEM(MARGINE_DEM_DEFAULT);
+      setMargineFattoInput(MARGINE_FATTO_DEFAULT); setCallCenter(CALL_CENTER_DEFAULT);
+      setMargineSocial(MARGINE_SOCIAL_DEFAULT); setMargineDemFatto(MARGINE_DEM_FATTO_DEFAULT);
     }
   };
 
@@ -261,9 +275,9 @@ const [callCenter, setCallCenter] = useState(() => {
     const display = noEuro ? Number(val).toLocaleString("it-IT") : fmt(val);
     return (
       <div style={{background:highlight?"#e8f5e9":"#fff",borderRadius:8,padding:"12px 14px",border:highlight?"1px solid #81c784":"1px solid rgba(255,85,0,0.2)"}}>
-       <div style={{fontSize:11,color:highlight?"#2e7d32":"#FF5500",fontWeight:600,marginBottom:4,display:"flex",alignItems:"center"}}>
-  {label}{TOOLTIPS[label] && <Tooltip text={TOOLTIPS[label]}/>}
-</div>
+        <div style={{fontSize:11,color:highlight?"#2e7d32":"#FF5500",fontWeight:600,marginBottom:4,display:"flex",alignItems:"center"}}>
+          {label}{TOOLTIPS[label] && <Tooltip text={TOOLTIPS[label]}/>}
+        </div>
         {editable
           ? editing
             ? <input autoFocus type="number" defaultValue={val}
@@ -279,30 +293,45 @@ const [callCenter, setCallCenter] = useState(() => {
   return (
     <div style={{minHeight:"100vh"}}>
       <div style={{background:"#fff",borderBottom:"3px solid #FF5500",padding:"12px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10,boxShadow:"0 2px 8px rgba(255,85,0,0.08)"}}>
-       <img src="https://semplicemedia.it/static/logo-brand-55430fe85c96e0d40876912373d2a173.png" alt="Logo" style={{height:44, objectFit:"contain"}}/>
+        <img src="https://semplicemedia.it/static/logo-brand-55430fe85c96e0d40876912373d2a173.png" alt="Logo" style={{height:44,objectFit:"contain"}}/>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <button onClick={()=>fileRef.current.click()} style={{fontSize:12,padding:"6px 14px",color:"#FF5500",border:"1px solid #FF5500",borderRadius:6,background:"#fff8f5",cursor:"pointer",fontWeight:500}}>↑ Carica CSV</button>
           <input ref={fileRef} type="file" accept=".csv,.txt" style={{display:"none"}} onChange={handleFile}/>
           <button onClick={resetAll} style={{fontSize:12,padding:"6px 14px",color:"#999",border:"1px solid #ddd",borderRadius:6,background:"#fff",cursor:"pointer"}}>Reset</button>
-          <button onClick={() => { localStorage.clear(); window.location.reload(); }} style={{fontSize:12,padding:"6px 14px",color:"#fff",border:"1px solid #FF5500",borderRadius:6,background:"#FF5500",cursor:"pointer",fontWeight:500}}>↺ Aggiorna dati</button>
+          <button onClick={()=>{localStorage.clear();window.location.reload();}} style={{fontSize:12,padding:"6px 14px",color:"#fff",border:"1px solid #FF5500",borderRadius:6,background:"#FF5500",cursor:"pointer",fontWeight:500}}>↺ Aggiorna dati</button>
           {csvMsg && <span style={{fontSize:11,color:csvMsg.startsWith("✓")?"#1a8a4a":"#c0392b"}}>{csvMsg}</span>}
         </div>
       </div>
 
       <div style={{padding:"1rem"}}>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:"0.8rem"}}>
-          <KPI label="Margine totale as is" val={margineFattoInput} editable onChange={setMargineFattoInput} highlight/>
+        {/* RIGA 1 - Forecast */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:"0.8rem"}}>
           <KPI label="Forcast margine social" val={margineDaSocial}/>
           <KPI label="Forcast margine DEM" val={margineDEM} editable onChange={setMargineDEM}/>
-          <KPI label="Forcast totale " val={totale} highlight/>
+          <KPI label="Forcast totale" val={forcastTotale} highlight/>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:"1.2rem"}}>
+
+        {/* RIGA 2 - Margine fatto */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:"0.8rem"}}>
+          <KPI label="Margine Social" val={margineSocial} editable onChange={setMargineSocial}/>
+          <KPI label="Margine DEM" val={margineDemFatto} editable onChange={setMargineDemFatto}/>
+          <KPI label="Margine totale as is" val={margineTotaleAsIs} highlight/>
+        </div>
+
+        {/* RIGA 3 - Forecast day */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:"0.8rem"}}>
           <KPI label="Forcast Margine day social" val={somma}/>
+          <KPI label="Forcast Margine day DEM" val={forcastDemDay}/>
           <KPI label="Forcast margine day totale" val={stimaOverall} highlight/>
-          <KPI label="Call center" val={callCenter} editable onChange={setCallCenter}/>
+        </div>
+
+        {/* RIGA 4 - Operativi */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,marginBottom:"1.2rem"}}>
+          <KPI label="Costo call center giornaliero" val={callCenter} editable onChange={setCallCenter}/>
           <KPI label="Giorni lavorativi restanti" val={giorniLav} editable onChange={setGiorniLav} noEuro/>
         </div>
 
+        {/* Tabella */}
         <div style={{overflowX:"auto",borderRadius:10,border:"1px solid rgba(255,85,0,0.15)",background:"#fff",boxShadow:"0 1px 6px rgba(255,85,0,0.05)"}}>
           <table>
             <thead>
@@ -368,7 +397,7 @@ const [callCenter, setCallCenter] = useState(() => {
           </table>
         </div>
         <div style={{fontSize:10,color:"#bbb",marginTop:"0.6rem"}}>
-          I dati vengono salvati automaticamente nel browser. Usa il pulsante Reset per ripristinare i valori di default. · Colonne editabili: CAP, Vol. erogato, Speso, Margine day, CPL oggi
+          I dati vengono salvati automaticamente. Clicca "Aggiorna dati" per ricaricare i dati aggiornati dal server.
         </div>
       </div>
     </div>
