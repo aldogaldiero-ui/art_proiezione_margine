@@ -27,12 +27,12 @@ const pct = (n) => (n == null || !isFinite(n)) ? "#DIV/0!" : n.toFixed(1) + "%";
 const col = (v) => v == null ? "#aaa" : v < 0 ? "#c0392b" : v > 0 ? "#1a8a4a" : "#aaa";
 
  const TOOLTIPS = {
-  "Margine fatto totale": "Margine economico già generato fino ad oggi.",
-  "Margine da fare social": "Margine ancora producibile dalle campagne social.",
-  "Margine da fare DEM": "Margine ancora producibile dalle campagne DEM.",
-  "Totale": "Previsione margine finale totale.",
-  "Somma margine day social": "Margine giornaliero netto social.",
-  "Stima margine day overall": "Proiezione giornaliera complessiva social + DEM",
+  "Margine totale as is": "Margine economico già generato fino ad oggi.",
+  "Forcast margine social": "Margine ancora producibile dalle campagne social.",
+  "Forcast margine DEM": "Margine ancora producibile dalle campagne DEM.",
+  "Forcast totale": "Previsione margine finale totale.",
+  "Forcast Margine day social": "Margine giornaliero netto social.",
+  "Forcast margine day totale": "Proiezione giornaliera complessiva social + DEM",
   "Call center": "Costo giornaliero call center.",
   "Giorni lavorativi restanti": "Giorni lavorativi (lun–ven) rimanenti.",
 };
