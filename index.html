@@ -291,14 +291,14 @@ const [callCenter, setCallCenter] = useState(() => {
 
       <div style={{padding:"1rem"}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:"0.8rem"}}>
-          <KPI label="Margine fatto totale" val={margineFattoInput} editable onChange={setMargineFattoInput} highlight/>
-          <KPI label="Margine da fare social" val={margineDaSocial}/>
-          <KPI label="Margine da fare DEM" val={margineDEM} editable onChange={setMargineDEM}/>
-          <KPI label="Forcast" val={totale} highlight/>
+          <KPI label="Margine totale as is" val={margineFattoInput} editable onChange={setMargineFattoInput} highlight/>
+          <KPI label="Forcast margine social" val={margineDaSocial}/>
+          <KPI label="Forcast margine DEM" val={margineDEM} editable onChange={setMargineDEM}/>
+          <KPI label="Forcast totale " val={totale} highlight/>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:"1.2rem"}}>
-          <KPI label="Somma margine day social" val={somma}/>
-          <KPI label="Stima margine day overall" val={stimaOverall} highlight/>
+          <KPI label="Forcast Margine day social" val={somma}/>
+          <KPI label="Forcast margine day totale" val={stimaOverall} highlight/>
           <KPI label="Call center" val={callCenter} editable onChange={setCallCenter}/>
           <KPI label="Giorni lavorativi restanti" val={giorniLav} editable onChange={setGiorniLav} noEuro/>
         </div>
