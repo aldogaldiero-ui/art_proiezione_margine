@@ -58,7 +58,7 @@ def load_meta(rows_raw):
             meta[key] = (val.strip() if val else "")
     return meta
 
-def build_init(rows, giorni=10, margine_fatto=63738.30, margine_dem=14632, call_center=272):
+def build_init(rows, giorni=10, margine_fatto=0, margine_dem=0, call_center=272, margine_social=0, margine_dem_fatto=0):
     version = datetime.now().strftime("%Y%m%d%H%M")
     lines = [
         f'const DATA_VERSION = "{version}";',
@@ -66,6 +66,8 @@ def build_init(rows, giorni=10, margine_fatto=63738.30, margine_dem=14632, call_
         f'const MARGINE_FATTO_DEFAULT = {margine_fatto};',
         f'const MARGINE_DEM_DEFAULT = {margine_dem};',
         f'const CALL_CENTER_DEFAULT = {call_center};',
+        f'const MARGINE_SOCIAL_DEFAULT = {margine_social};',
+        f'const MARGINE_DEM_FATTO_DEFAULT = {margine_dem_fatto};',
         "const INIT = ["
     ]
     for i, r in enumerate(rows):
@@ -81,7 +83,7 @@ def build_init(rows, giorni=10, margine_fatto=63738.30, margine_dem=14632, call_
 
 def update_html(html_path, new_init, rows):
     html = Path(html_path).read_text(encoding="utf-8")
-    pattern = r'(?:const DATA_VERSION = "[^"]*";\n)?(?:const GIORNI_DEFAULT = [\d.]+;\n)?(?:const MARGINE_FATTO_DEFAULT = [\d.]+;\n)?(?:const MARGINE_DEM_DEFAULT = [\d.]+;\n)?(?:const CALL_CENTER_DEFAULT = [\d.]+;\n)?const INIT = \[[\s\S]*?\];'
+    pattern = r'(?:const DATA_VERSION = "[^"]*";\n)?(?:const GIORNI_DEFAULT = [\d.]+;\n)?(?:const MARGINE_FATTO_DEFAULT = [\d.]+;\n)?(?:const MARGINE_DEM_DEFAULT = [\d.]+;\n)?(?:const CALL_CENTER_DEFAULT = [\d.]+;\n)?(?:const MARGINE_SOCIAL_DEFAULT = [\d.]+;\n)?(?:const MARGINE_DEM_FATTO_DEFAULT = [\d.]+;\n)?const INIT = \[[\s\S]*?\];'
     if not re.search(pattern, html):
         print("❌ Blocco INIT non trovato nell'HTML")
         sys.exit(1)
@@ -101,13 +103,15 @@ if __name__ == "__main__":
 
     meta = load_meta(rows_raw)
     giorni = int(meta.get("giorni", 10))
-    margine_fatto = float(meta.get("margine_fatto", 63738.30))
-    margine_dem = float(meta.get("margine_dem", 14632))
+    margine_fatto = float(meta.get("margine_fatto", 0))
+    margine_dem = float(meta.get("margine_dem", 0))
     call_center = float(meta.get("call_center", 272))
+    margine_social = float(meta.get("margine_social", 0))
+    margine_dem_fatto = float(meta.get("margine_dem_fatto", 0))
 
     rows = load_csv(CSV_PATH)
     if not rows:
         print("❌ Nessuna riga trovata nel CSV")
         sys.exit(1)
-    new_init = build_init(rows, giorni, margine_fatto, margine_dem, call_center)
+    new_init = build_init(rows, giorni, margine_fatto, margine_dem, call_center, margine_social, margine_dem_fatto)
     update_html(HTML_PATH, new_init, rows)
