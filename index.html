@@ -298,7 +298,7 @@ function App() {
           <button onClick={()=>fileRef.current.click()} style={{fontSize:12,padding:"6px 14px",color:"#FF5500",border:"1px solid #FF5500",borderRadius:6,background:"#fff8f5",cursor:"pointer",fontWeight:500}}>↑ Carica CSV</button>
           <input ref={fileRef} type="file" accept=".csv,.txt" style={{display:"none"}} onChange={handleFile}/>
           <button onClick={resetAll} style={{fontSize:12,padding:"6px 14px",color:"#999",border:"1px solid #ddd",borderRadius:6,background:"#fff",cursor:"pointer"}}>Reset</button>
-          <button onClick={()=>{localStorage.clear();window.location.reload();}} style={{fontSize:12,padding:"6px 14px",color:"#fff",border:"1px solid #FF5500",borderRadius:6,background:"#FF5500",cursor:"pointer",fontWeight:500}}>↺ Aggiorna dati</button>
+          <button onClick={()=>{localStorage.clear();window.location.href=window.location.pathname+'?v='+Date.now();}} style={{fontSize:12,padding:"6px 14px",color:"#fff",border:"1px solid #FF5500",borderRadius:6,background:"#FF5500",cursor:"pointer",fontWeight:500}}>↺ Aggiorna dati</button>
           {csvMsg && <span style={{fontSize:11,color:csvMsg.startsWith("✓")?"#1a8a4a":"#c0392b"}}>{csvMsg}</span>}
         </div>
       </div>
