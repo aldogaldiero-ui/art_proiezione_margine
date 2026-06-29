@@ -225,7 +225,21 @@ function App() {
         margineDay: headers.findIndex(h => h.includes("margine day") || h === "margine_day" || h === "margineday"),
         cplOggi:    headers.findIndex(h => h.includes("cpl oggi") || h === "cpl_oggi" || h === "cploggi"),
       };
-      const dataLines = lines.slice(1).filter(l => l.split(sep)[idx.nome >= 0 ? idx.nome : 0]?.trim());
+      // Leggi righe meta __xxx__
+      lines.slice(1).forEach(l => {
+        const cells = l.split(sep).map(x => x.trim().replace(/^"|"$/g,""));
+        const key = cells[0];
+        const val = cells[1];
+        if (key === "__giorni__")              setGiorniLav(+val || GIORNI_DEFAULT);
+        if (key === "__margine_totale_as_is__") setMargineTotaleAsIs(parseVal(val) || MARGINE_TOTALE_AS_IS_DEFAULT);
+        if (key === "__margine_dem__")          setMargineDEM(parseVal(val) || MARGINE_DEM_DEFAULT);
+        if (key === "__call_center__")          setCallCenter(parseVal(val) || CALL_CENTER_DEFAULT);
+      });
+
+      const dataLines = lines.slice(1).filter(l => {
+        const name = l.split(sep)[idx.nome >= 0 ? idx.nome : 0]?.trim();
+        return name && !name.startsWith("__");
+      });
       if (!dataLines.length) { setCsvMsg("Errore: Nessun dato trovato"); return; }
       const mapped = dataLines.map((l, i) => {
         const v = l.split(sep).map(x => x.trim().replace(/^"|"$/g,""));
