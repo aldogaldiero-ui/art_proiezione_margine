@@ -24,6 +24,6 @@ Kinto;850;20;;;12.00;
 WIND;20;155;;;150.00;
 WIND b2b;100;30;;;15.00;
 __giorni__;2;;;;;
-__margine_fatto__;109693.6;;;;;
-__margine_dem__;1300;;;;;
-__call_center__;272;;;;;
+__margine_totale_as_is__;109693.6
+__margine_dem__;1300
+__call_center__;272
