@@ -20,7 +20,7 @@
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useMemo, useRef, useEffect } = React;
+const { useState, useMemo, useRef } = React;
 
 const fmt = (n) => "€ " + Number(n).toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const pct = (n) => (n == null || !isFinite(n)) ? "#DIV/0!" : n.toFixed(1) + "%";
@@ -57,37 +57,32 @@ const MARGINE_TOTALE_AS_IS_DEFAULT = 109693.6;
 const MARGINE_DEM_DEFAULT = 1300.0;
 const CALL_CENTER_DEFAULT = 272.0;
 const INIT = [
-  { id:1,  nome:"Remail",                cap:0.0,     payout:0.0,   volErogato:0,     speso:0,       cplOggi:0,     mdOverride:null },
-  { id:2,  nome:"Ariel",                 cap:0.0,     payout:20.0,  volErogato:0,     speso:0,       cplOggi:34.85, mdOverride:-50.0 },
-  { id:3,  nome:"Bagni",                 cap:0.0,     payout:25.0,  volErogato:0,     speso:0,       cplOggi:40.09, mdOverride:-50.0 },
-  { id:4,  nome:"Iberdrola Spagna",      cap:1430.0,  payout:11.0,  volErogato:1134.0,speso:12870.0, cplOggi:10.0,  mdOverride:null },
-  { id:5,  nome:"Coche",                 cap:0.0,     payout:13.0,  volErogato:0,     speso:0,       cplOggi:0,     mdOverride:null },
-  { id:6,  nome:"Pianificazione fiscale",cap:0.0,     payout:0.0,   volErogato:0,     speso:0,       cplOggi:0,     mdOverride:-40.0 },
-  { id:7,  nome:"Metlife tiktok",        cap:175.0,   payout:16.0,  volErogato:99.0,  speso:1970.0,  cplOggi:23.0,  mdOverride:null },
-  { id:8,  nome:"Metlife OTP",           cap:400.0,   payout:16.0,  volErogato:449.0, speso:4440.0,  cplOggi:12.0,  mdOverride:null },
-  { id:9,  nome:"Metlife LP",            cap:625.0,   payout:20.0,  volErogato:124.0, speso:1780.0,  cplOggi:18.0,  mdOverride:null },
-  { id:10, nome:"Metlife lead ads",      cap:202.0,   payout:7.5,   volErogato:202.0, speso:890.0,   cplOggi:0,     mdOverride:null },
-  { id:11, nome:"SKY WIFI",              cap:200.0,   payout:25.0,  volErogato:163.0, speso:2927.63, cplOggi:18.0,  mdOverride:null },
-  { id:12, nome:"TIM - Mobile",          cap:11420.0, payout:11.5,  volErogato:10694.0,speso:76540.0,cplOggi:8.0,   mdOverride:null },
-  { id:13, nome:"TIM 2490",              cap:143.0,   payout:14.0,  volErogato:110.0, speso:980.0,   cplOggi:9.0,   mdOverride:null },
-  { id:14, nome:"BMW MOTORAD",           cap:790.0,   payout:19.0,  volErogato:0,     speso:0,       cplOggi:11.0,  mdOverride:null },
-  { id:15, nome:"Ford Approved",         cap:198.0,   payout:12.0,  volErogato:0,     speso:0,       cplOggi:11.0,  mdOverride:null },
-  { id:16, nome:"FORD BLUE",             cap:195.0,   payout:15.0,  volErogato:0,     speso:0,       cplOggi:0,     mdOverride:null },
-  { id:17, nome:"Mach e",                cap:122.0,   payout:17.0,  volErogato:0,     speso:0,       cplOggi:0,     mdOverride:null },
-  { id:18, nome:"FordPRO",               cap:223.0,   payout:17.0,  volErogato:0,     speso:0,       cplOggi:0,     mdOverride:null },
-  { id:19, nome:"FORD PRO Elettrico",    cap:34.0,    payout:30.0,  volErogato:0,     speso:0,       cplOggi:0,     mdOverride:null },
-  { id:20, nome:"FORD Flotte",           cap:41.0,    payout:25.0,  volErogato:14.0,  speso:398.0,   cplOggi:0,     mdOverride:null },
-  { id:21, nome:"Lexus AWO",             cap:607.0,   payout:28.0,  volErogato:0,     speso:0,       cplOggi:24.0,  mdOverride:null },
-  { id:22, nome:"Kinto",                 cap:850.0,   payout:20.0,  volErogato:0,     speso:0,       cplOggi:12.0,  mdOverride:null },
-  { id:23, nome:"WIND",                  cap:20.0,    payout:155.0, volErogato:0,     speso:0,       cplOggi:150.0, mdOverride:null },
-  { id:24, nome:"WIND b2b",              cap:100.0,   payout:30.0,  volErogato:0,     speso:0,       cplOggi:15.0,  mdOverride:null },
+  { id:1,  nome:"Remail",                cap:0.0,     payout:0.0,   volErogato:0,      speso:0,       cplOggi:0,     mdOverride:null },
+  { id:2,  nome:"Ariel",                 cap:0.0,     payout:20.0,  volErogato:0,      speso:0,       cplOggi:34.85, mdOverride:-50.0 },
+  { id:3,  nome:"Bagni",                 cap:0.0,     payout:25.0,  volErogato:0,      speso:0,       cplOggi:40.09, mdOverride:-50.0 },
+  { id:4,  nome:"Iberdrola Spagna",      cap:1430.0,  payout:11.0,  volErogato:1134.0, speso:12870.0, cplOggi:10.0,  mdOverride:null },
+  { id:5,  nome:"Coche",                 cap:0.0,     payout:13.0,  volErogato:0,      speso:0,       cplOggi:0,     mdOverride:null },
+  { id:6,  nome:"Pianificazione fiscale",cap:0.0,     payout:0.0,   volErogato:0,      speso:0,       cplOggi:0,     mdOverride:-40.0 },
+  { id:7,  nome:"Metlife tiktok",        cap:175.0,   payout:16.0,  volErogato:99.0,   speso:1970.0,  cplOggi:23.0,  mdOverride:null },
+  { id:8,  nome:"Metlife OTP",           cap:400.0,   payout:16.0,  volErogato:449.0,  speso:4440.0,  cplOggi:12.0,  mdOverride:null },
+  { id:9,  nome:"Metlife LP",            cap:625.0,   payout:20.0,  volErogato:124.0,  speso:1780.0,  cplOggi:18.0,  mdOverride:null },
+  { id:10, nome:"Metlife lead ads",      cap:202.0,   payout:7.5,   volErogato:202.0,  speso:890.0,   cplOggi:0,     mdOverride:null },
+  { id:11, nome:"SKY WIFI",              cap:200.0,   payout:25.0,  volErogato:163.0,  speso:2927.63, cplOggi:18.0,  mdOverride:null },
+  { id:12, nome:"TIM - Mobile",          cap:11420.0, payout:11.5,  volErogato:10694.0,speso:76540.0, cplOggi:8.0,   mdOverride:null },
+  { id:13, nome:"TIM 2490",              cap:143.0,   payout:14.0,  volErogato:110.0,  speso:980.0,   cplOggi:9.0,   mdOverride:null },
+  { id:14, nome:"BMW MOTORAD",           cap:790.0,   payout:19.0,  volErogato:0,      speso:0,       cplOggi:11.0,  mdOverride:null },
+  { id:15, nome:"Ford Approved",         cap:198.0,   payout:12.0,  volErogato:0,      speso:0,       cplOggi:11.0,  mdOverride:null },
+  { id:16, nome:"FORD BLUE",             cap:195.0,   payout:15.0,  volErogato:0,      speso:0,       cplOggi:0,     mdOverride:null },
+  { id:17, nome:"Mach e",                cap:122.0,   payout:17.0,  volErogato:0,      speso:0,       cplOggi:0,     mdOverride:null },
+  { id:18, nome:"FordPRO",               cap:223.0,   payout:17.0,  volErogato:0,      speso:0,       cplOggi:0,     mdOverride:null },
+  { id:19, nome:"FORD PRO Elettrico",    cap:34.0,    payout:30.0,  volErogato:0,      speso:0,       cplOggi:0,     mdOverride:null },
+  { id:20, nome:"FORD Flotte",           cap:41.0,    payout:25.0,  volErogato:14.0,   speso:398.0,   cplOggi:0,     mdOverride:null },
+  { id:21, nome:"Lexus AWO",             cap:607.0,   payout:28.0,  volErogato:0,      speso:0,       cplOggi:24.0,  mdOverride:null },
+  { id:22, nome:"Kinto",                 cap:850.0,   payout:20.0,  volErogato:0,      speso:0,       cplOggi:12.0,  mdOverride:null },
+  { id:23, nome:"WIND",                  cap:20.0,    payout:155.0, volErogato:0,      speso:0,       cplOggi:150.0, mdOverride:null },
+  { id:24, nome:"WIND b2b",              cap:100.0,   payout:30.0,  volErogato:0,      speso:0,       cplOggi:15.0,  mdOverride:null },
 ];
 /* ── FINE BLOCCO DATI ── */
-
-const LS = {
-  load: (key, fallback) => { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; } },
-  save: (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
-};
 
 const parseVal = (v) => {
   if (!v || v.trim()==="" || v.includes("#") || v.trim()==="-" || v.trim()==="- €") return 0;
@@ -125,11 +120,8 @@ const KPI = ({ label, val, editable, highlight, onChange, noEuro }) => {
       borderRadius: 8,
       padding: "10px 16px",
       border: highlight ? "1px solid #81c784" : "1px solid rgba(255,85,0,0.2)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: 24,
-      width: "100%",
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      gap: 24, width: "100%",
     }}>
       <div style={{ fontSize:12, color: highlight ? "#2e7d32" : "#FF5500", fontWeight:600, display:"flex", alignItems:"center", whiteSpace:"nowrap" }}>
         {label}{TOOLTIPS[label] && <Tooltip text={TOOLTIPS[label]}/>}
@@ -147,27 +139,15 @@ const KPI = ({ label, val, editable, highlight, onChange, noEuro }) => {
 };
 
 function App() {
-  const fresh = LS.load("sm_data_version", null) !== DATA_VERSION;
-
-  const [campaigns, setCampaigns] = useState(() => {
-    if (fresh) { LS.save("sm_data_version", DATA_VERSION); return INIT; }
-    return LS.load("sm_campaigns", INIT);
-  });
-  const [giorniLav,         setGiorniLav]         = useState(() => fresh ? GIORNI_DEFAULT             : LS.load("sm_giorni",        GIORNI_DEFAULT));
-  const [margineDEM,        setMargineDEM]         = useState(() => fresh ? MARGINE_DEM_DEFAULT         : LS.load("sm_dem",           MARGINE_DEM_DEFAULT));
-  const [callCenter,        setCallCenter]         = useState(() => fresh ? CALL_CENTER_DEFAULT         : LS.load("sm_cc",            CALL_CENTER_DEFAULT));
-  const [margineTotaleAsIs, setMargineTotaleAsIs]  = useState(() => fresh ? MARGINE_TOTALE_AS_IS_DEFAULT : LS.load("sm_margine_as_is", MARGINE_TOTALE_AS_IS_DEFAULT));
-
-  const [editingId, setEditingId] = useState(null);
-  const [editBuf,   setEditBuf]   = useState({});
-  const [csvMsg,    setCsvMsg]    = useState("");
+  const [campaigns,         setCampaigns]         = useState(INIT);
+  const [giorniLav,         setGiorniLav]         = useState(GIORNI_DEFAULT);
+  const [margineDEM,        setMargineDEM]        = useState(MARGINE_DEM_DEFAULT);
+  const [callCenter,        setCallCenter]        = useState(CALL_CENTER_DEFAULT);
+  const [margineTotaleAsIs, setMargineTotaleAsIs] = useState(MARGINE_TOTALE_AS_IS_DEFAULT);
+  const [editingId,         setEditingId]         = useState(null);
+  const [editBuf,           setEditBuf]           = useState({});
+  const [csvMsg,            setCsvMsg]            = useState("");
   const fileRef = useRef();
-
-  useEffect(() => { LS.save("sm_campaigns",     campaigns);         }, [campaigns]);
-  useEffect(() => { LS.save("sm_giorni",        giorniLav);         }, [giorniLav]);
-  useEffect(() => { LS.save("sm_dem",           margineDEM);        }, [margineDEM]);
-  useEffect(() => { LS.save("sm_cc",            callCenter);        }, [callCenter]);
-  useEffect(() => { LS.save("sm_margine_as_is", margineTotaleAsIs); }, [margineTotaleAsIs]);
 
   const rows = useMemo(() => campaigns.map(c => {
     const budgetTotale   = c.cap * c.payout;
@@ -191,6 +171,7 @@ function App() {
 
   const setMdOverride   = (id, val) => setCampaigns(p => p.map(c => c.id===id ? {...c, mdOverride:val} : c));
   const resetMdOverride = (id)      => setCampaigns(p => p.map(c => c.id===id ? {...c, mdOverride:null} : c));
+  const updCamp         = (id, field, val) => setCampaigns(p => p.map(x => x.id===id ? {...x, [field]:val} : x));
   const startEdit = (c) => { setEditingId(c.id); setEditBuf({...c}); };
   const saveEdit  = () => {
     setCampaigns(p => p.map(c => c.id===editingId ? {
@@ -226,11 +207,9 @@ function App() {
         margineDay: headers.findIndex(h => h.includes("margine day") || h === "margine_day" || h === "margineday"),
         cplOggi:    headers.findIndex(h => h.includes("cpl oggi") || h === "cpl_oggi" || h === "cploggi"),
       };
-      // Leggi righe meta __xxx__
       lines.slice(1).forEach(l => {
         const cells = l.split(sep).map(x => x.trim().replace(/^"|"$/g,""));
-        const key = cells[0];
-        const val = cells[1];
+        const key = cells[0]; const val = cells[1];
         if (key === "__giorni__")               setGiorniLav(+val || GIORNI_DEFAULT);
         if (key === "__margine_totale_as_is__") setMargineTotaleAsIs(parseVal(val) || MARGINE_TOTALE_AS_IS_DEFAULT);
         if (key === "__margine_dem__")           setMargineDEM(parseVal(val) || MARGINE_DEM_DEFAULT);
@@ -259,14 +238,11 @@ function App() {
         };
       });
       setCampaigns(mapped);
-      localStorage.setItem("sm_campaigns", JSON.stringify(mapped));
       setCsvMsg("OK: " + mapped.length + " campagne aggiornate");
       setTimeout(() => setCsvMsg(""), 4000);
     };
     reader.readAsText(f, "UTF-8");
   };
-
-  const updCamp = (id, field, val) => setCampaigns(p => p.map(x => x.id===id ? {...x, [field]: val} : x));
 
   const TH = ({ch, left}) => (
     <th style={{padding:"9px 8px",textAlign:left?"left":"right",fontSize:11,fontWeight:600,color:"#fff",whiteSpace:"nowrap",background:"#FF5500",borderBottom:"0.5px solid rgba(255,255,255,0.15)",position:"sticky",top:0,zIndex:1}}>{ch}</th>
@@ -288,7 +264,6 @@ function App() {
           <button onClick={()=>fileRef.current.click()} style={{fontSize:12,padding:"6px 14px",color:"#FF5500",border:"1px solid #FF5500",borderRadius:6,background:"#fff8f5",cursor:"pointer",fontWeight:500}}>Carica CSV</button>
           <input ref={fileRef} type="file" accept=".csv,.txt" style={{display:"none"}} onChange={handleFile}/>
           <button onClick={resetAll} style={{fontSize:12,padding:"6px 14px",color:"#999",border:"1px solid #ddd",borderRadius:6,background:"#fff",cursor:"pointer"}}>Reset</button>
-          <button onClick={()=>{localStorage.clear();window.location.href=window.location.pathname+"?v="+Date.now();}} style={{fontSize:12,padding:"6px 14px",color:"#fff",border:"1px solid #FF5500",borderRadius:6,background:"#FF5500",cursor:"pointer",fontWeight:500}}>Aggiorna dati</button>
           {csvMsg && <span style={{fontSize:11,color:csvMsg.startsWith("OK")?"#1a8a4a":"#c0392b"}}>{csvMsg}</span>}
         </div>
       </div>
@@ -367,7 +342,7 @@ function App() {
           </table>
         </div>
         <div style={{fontSize:10,color:"#bbb",marginTop:"0.6rem"}}>
-          I dati vengono salvati automaticamente. Clicca "Aggiorna dati" per ricaricare i dati dal server.
+          Carica un CSV per aggiornare i dati. Le modifiche manuali sono valide fino al ricaricamento della pagina.
         </div>
       </div>
     </div>
