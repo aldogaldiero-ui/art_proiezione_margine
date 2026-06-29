@@ -61,9 +61,9 @@ def load_meta(rows_raw):
 def build_init(rows, giorni=10, margine_totale_as_is=0, margine_dem=0, call_center=272):
     version = datetime.now().strftime("%Y%m%d%H%M")
     lines = [
+        "/* ── BLOCCO DATI – sostituito da update_data.py ── */",
         f'const DATA_VERSION = "{version}";',
         f'const GIORNI_DEFAULT = {giorni};',
-        f'const MARGINE_FATTO_DEFAULT = {margine_totale_as_is};',
         f'const MARGINE_TOTALE_AS_IS_DEFAULT = {margine_totale_as_is};',
         f'const MARGINE_DEM_DEFAULT = {margine_dem};',
         f'const CALL_CENTER_DEFAULT = {call_center};',
@@ -82,21 +82,13 @@ def build_init(rows, giorni=10, margine_totale_as_is=0, margine_dem=0, call_cent
 
 def update_html(html_path, new_init, rows):
     html = Path(html_path).read_text(encoding="utf-8")
-    pattern = (
-        r'(?:const DATA_VERSION = "[^"]*";\n)?'
-        r'(?:const GIORNI_DEFAULT = [\d.]+;\n)?'
-        r'(?:const MARGINE_FATTO_DEFAULT = [\d.]+;\n)?'
-        r'(?:const MARGINE_TOTALE_AS_IS_DEFAULT = [\d.]+;\n)?'
-        r'(?:const MARGINE_DEM_DEFAULT = [\d.]+;\n)?'
-        r'(?:const CALL_CENTER_DEFAULT = [\d.]+;\n)?'
-        r'(?:const MARGINE_SOCIAL_DEFAULT = [\d.]+;\n)?'
-        r'(?:const MARGINE_DEM_FATTO_DEFAULT = [\d.]+;\n)?'
-        r'const INIT = \[[\s\S]*?\];'
-    )
+    # Cerca il blocco delimitato dai commenti
+    pattern = r'/\* ── BLOCCO DATI[\s\S]*?/\* ── FINE BLOCCO DATI ── \*/'
     if not re.search(pattern, html):
-        print("❌ Blocco INIT non trovato nell'HTML")
+        print("❌ Blocco DATI non trovato nell'HTML")
         sys.exit(1)
-    updated = re.sub(pattern, new_init, html)
+    new_block = new_init + "\n/* ── FINE BLOCCO DATI ── */"
+    updated = re.sub(pattern, new_block, html)
     Path(html_path).write_text(updated, encoding="utf-8")
     print(f"✓ index.html aggiornato con {len(rows)} campagne")
 
