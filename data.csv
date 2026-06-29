@@ -1,31 +1,29 @@
 Nome Campagna;CAP;Payout;Vol. erogato;Speso;CPL oggi;Margine day
 Remail;0;0;;;;
-Ariel;100;20;24;925;34.85;-50
-Bagni;100;25;28;1065;40.09;-50
-Iberdrola Spagna;880;11;881;7990;10.00;
+Ariel;;20;;;34.85;-50
+Bagni;;25;;;40.09;-50
+Iberdrola Spagna;1430;11;1134;12870;10.00;
 Coche;0;13;;;;
 Pianificazione fiscale;0;0;;;;-40
-Metlife tiktok;175;16;85;1701;23.00;
-Metlife OTP;400;16;388;3728;12.00;
-Metlife LP;625;20;76;1193;18.00;
+Metlife tiktok;175;16;99;1970;23.00;
+Metlife OTP;400;16;449;4440;12.00;
+Metlife LP;625;20;124;1780;18.00;
 Metlife lead ads;202;7.5;202;890;;
-SKY WIFI;200;25;89;1591;18.00;
-TIM - Mobile;11420;11.5;8283;59624;8.00;
-TIM 2490;143;14;86;478;9.00;
-BMW MOTORAD;790;19;477;4293;11.00;
-Ford Approved;198;12;198;2060;11.00;
-FORD BLUE;195;15;195;1935;;
-Mach e;122;17;122;1043;;
-FordPRO;223;17;223;4357;;
-FORD PRO Elettrico;34;30;32;429;;
-FORD Flotte;0;25;;;;
-Lexus AWO;607;28;454;10380;24.00;
-Kinto;850;20;707;6221;12.00;
-WIND;20;155;10;1654;150.00;
-WIND b2b;100;30;64;733;15.00;
-__giorni__;7
-__margine_fatto__;84151.5
-__margine_dem__;6241.86
-__call_center__;272
-__margine_social__;53914.00
-__margine_dem_fatto__;30237.00
+SKY WIFI;200;25;163;2927.63;18.00;
+TIM - Mobile;11420;11.5;10694;76540;8.00;
+TIM 2490;143;14;110;980;9.00;
+BMW MOTORAD;790;19;;;11.00;
+Ford Approved;198;12;;;11.00;
+FORD BLUE;195;15;;;;
+Mach e;122;17;;;;
+FordPRO;223;17;;;;
+FORD PRO Elettrico;34;30;;;;
+FORD Flotte;41;25;14;398;;
+Lexus AWO;607;28;;;24.00;
+Kinto;850;20;;;12.00;
+WIND;20;155;;;150.00;
+WIND b2b;100;30;;;15.00;
+__giorni__;2;;;;;
+__margine_fatto__;109693.6;;;;;
+__margine_dem__;1300;;;;;
+__call_center__;272;;;;;
