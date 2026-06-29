@@ -120,8 +120,18 @@ const KPI = ({ label, val, editable, highlight, onChange, noEuro }) => {
   const [editing, setEditing] = useState(false);
   const display = noEuro ? Number(val).toLocaleString("it-IT") : fmt(val);
   return (
-    <div style={{ background: highlight ? "#e8f5e9" : "#fff", borderRadius:8, padding:"12px 18px", border: highlight ? "1px solid #81c784" : "1px solid rgba(255,85,0,0.2)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:16 }}>
-      <div style={{ fontSize:12, color: highlight ? "#2e7d32" : "#FF5500", fontWeight:600, display:"flex", alignItems:"center" }}>
+    <div style={{
+      background: highlight ? "#e8f5e9" : "#fff",
+      borderRadius: 8,
+      padding: "10px 16px",
+      border: highlight ? "1px solid #81c784" : "1px solid rgba(255,85,0,0.2)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 24,
+      width: "100%",
+    }}>
+      <div style={{ fontSize:12, color: highlight ? "#2e7d32" : "#FF5500", fontWeight:600, display:"flex", alignItems:"center", whiteSpace:"nowrap" }}>
         {label}{TOOLTIPS[label] && <Tooltip text={TOOLTIPS[label]}/>}
       </div>
       {editable
@@ -129,9 +139,9 @@ const KPI = ({ label, val, editable, highlight, onChange, noEuro }) => {
           ? <input autoFocus type="number" defaultValue={val}
               onBlur={e=>{onChange(+e.target.value);setEditing(false);}}
               onKeyDown={e=>{if(e.key==="Enter"){onChange(+e.target.value);setEditing(false);}}}
-              style={{ fontSize:20, fontWeight:700, background:"transparent", border:"none", outline:"none", color:"#222", textAlign:"right", width:160 }}/>
-          : <div onClick={()=>setEditing(true)} style={{ fontSize:20, fontWeight:700, color:"#222", cursor:"text", whiteSpace:"nowrap" }}>{display}</div>
-        : <div style={{ fontSize:20, fontWeight:700, color: highlight ? "#1b5e20" : "#222", whiteSpace:"nowrap" }}>{display}</div>}
+              style={{ fontSize:16, fontWeight:700, background:"transparent", border:"none", outline:"none", color:"#222", textAlign:"right", width:120 }}/>
+          : <div onClick={()=>setEditing(true)} style={{ fontSize:16, fontWeight:700, color:"#222", cursor:"text", whiteSpace:"nowrap" }}>{display}</div>
+        : <div style={{ fontSize:16, fontWeight:700, color: highlight ? "#1b5e20" : "#222", whiteSpace:"nowrap" }}>{display}</div>}
     </div>
   );
 };
@@ -288,12 +298,23 @@ function App() {
       </div>
 
       <div style={{padding:"1rem"}}>
-        <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:"1.2rem"}}>
-          <KPI label="Margine totale as is" val={margineTotaleAsIs} highlight/>
-          <KPI label="Forcast totale" val={forcastTotale} highlight/>
-          <KPI label="Forcast margine day totale" val={stimaOverall} highlight/>
-          <KPI label="Costo call center giornaliero" val={callCenter} editable onChange={setCallCenter}/>
-          <KPI label="Giorni lavorativi restanti" val={giorniLav} editable onChange={setGiorniLav} noEuro/>
+        {/* KPI stack: verticale, tutte della stessa larghezza */}
+        <div style={{
+          display:"flex",
+          flexDirection:"column",
+          gap:10,
+          marginBottom:"1.2rem",
+          width:"fit-content"
+        }}>
+          {[
+            { label:"Margine totale as is",        val:margineTotaleAsIs, highlight:true },
+            { label:"Forcast totale",               val:forcastTotale,     highlight:true },
+            { label:"Forcast margine day totale",   val:stimaOverall,      highlight:true },
+            { label:"Costo call center giornaliero",val:callCenter,        editable:true, onChange:setCallCenter },
+            { label:"Giorni lavorativi restanti",   val:giorniLav,         editable:true, onChange:setGiorniLav, noEuro:true },
+          ].map(({label, val, highlight, editable, onChange, noEuro}) => (
+            <KPI key={label} label={label} val={val} highlight={highlight} editable={editable} onChange={onChange} noEuro={noEuro}/>
+          ))}
         </div>
 
         <div style={{overflowX:"auto",borderRadius:10,border:"1px solid rgba(255,85,0,0.15)",background:"#fff",boxShadow:"0 1px 6px rgba(255,85,0,0.05)"}}>
